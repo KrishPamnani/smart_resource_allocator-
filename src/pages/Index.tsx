@@ -9,11 +9,22 @@ import danielImg from "@/assets/volunteer-daniel.jpg";
 import josephImg from "@/assets/volunteer-joseph.jpg";
 import meeraImg from "@/assets/volunteer-meera.jpg";
 
-const needs = [
+type Need = {
+  id: number;
+  title: string;
+  zone: string;
+  score: number;
+  reports: number;
+  coordinates: [number, number];
+  impacted: number;
+  type: string;
+};
+
+const needs: Need[] = [
   { id: 8421, title: "Water Shortage - Ward 4", zone: "Red Zone", score: 9.2, reports: 28, coordinates: [77.209, 28.6139], impacted: 1240, type: "Water" },
   { id: 8417, title: "Food insecurity cluster", zone: "North Camp", score: 8.6, reports: 19, coordinates: [77.225, 28.623], impacted: 870, type: "Food" },
   { id: 8398, title: "Mobile clinic requested", zone: "River Block", score: 7.8, reports: 14, coordinates: [77.196, 28.604], impacted: 430, type: "Healthcare" },
-] as const;
+];
 
 const volunteers = [
   { name: "Aisha Rahman", occupation: "Community Health Nurse", experience: "6 yrs", distance: "1.2 km", match: 96, language: "Local Dialect", status: "Available", image: aishaImg },
