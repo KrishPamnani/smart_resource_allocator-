@@ -1,6 +1,29 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Bell, CheckCircle2, ClipboardList, Filter, LayoutDashboard, MapPin, Radio, Search, Settings, TrendingUp, Users, FileText, Waves, Wifi } from "lucide-react";
-import { Marker, NavigationControl } from "react-map-gl/maplibre";
+import {
+  ArrowUpRight,
+  Bell,
+  BriefcaseMedical,
+  CalendarDays,
+  Check,
+  CheckCircle2,
+  ClipboardList,
+  Crosshair,
+  DatabaseZap,
+  FileText,
+  Gauge,
+  HandHeart,
+  LayoutDashboard,
+  MapPin,
+  Package,
+  RefreshCw,
+  Search,
+  Settings,
+  ShieldCheck,
+  Siren,
+  Users,
+  Waves,
+} from "lucide-react";
+import { Marker } from "react-map-gl/maplibre";
 
 import { Button } from "@/components/ui/button";
 import { Map, type MapRef } from "@/components/ui/map";
@@ -21,30 +44,40 @@ type Need = {
 };
 
 const needs: Need[] = [
-  { id: 8421, title: "Water Shortage - Ward 4", zone: "Red Zone", score: 9.2, reports: 28, coordinates: [77.209, 28.6139], impacted: 1240, type: "Water" },
-  { id: 8417, title: "Food insecurity cluster", zone: "North Camp", score: 8.6, reports: 19, coordinates: [77.225, 28.623], impacted: 870, type: "Food" },
-  { id: 8398, title: "Mobile clinic requested", zone: "River Block", score: 7.8, reports: 14, coordinates: [77.196, 28.604], impacted: 430, type: "Healthcare" },
+  { id: 8421, title: "Needs Detail & Match", zone: "Dharavi Relief Grid", score: 9.2, reports: 257, coordinates: [72.8553, 19.038], impacted: 142, type: "Water" },
+  { id: 8417, title: "Needs Detail & Match", zone: "Kurla Transit Camp", score: 9.3, reports: 209, coordinates: [72.8796, 19.0726], impacted: 118, type: "Food" },
+  { id: 8398, title: "Needs Detail & Match", zone: "Sion Medical Line", score: 8.9, reports: 99, coordinates: [72.8611, 19.044], impacted: 76, type: "Healthcare" },
+  { id: 8374, title: "Needs Detail & Match", zone: "Mahim Coastal Block", score: 9.1, reports: 39, coordinates: [72.8401, 19.0427], impacted: 64, type: "Logistics" },
 ];
 
 const volunteers = [
-  { name: "Aisha Rahman", occupation: "Community Health Nurse", experience: "6 yrs", distance: "1.2 km", match: 96, language: "Local Dialect", status: "Available", image: aishaImg },
-  { name: "Daniel Okoro", occupation: "Water Systems Engineer", experience: "8 yrs", distance: "1.8 km", match: 94, language: "Hindi + English", status: "Available", image: danielImg },
-  { name: "Meera Patel", occupation: "Logistics Coordinator", experience: "5 yrs", distance: "2.4 km", match: 91, language: "Local Dialect", status: "On standby", image: meeraImg },
-  { name: "Joseph Kamau", occupation: "Paramedic", experience: "7 yrs", distance: "3.1 km", match: 88, language: "English", status: "Available", image: josephImg },
+  { name: "Dr. Jane Doe", occupation: "Field Medic", experience: "5+ Years", distance: "1.2 km away", match: 96, image: aishaImg },
+  { name: "Aisha Rahman", occupation: "Community Nurse", experience: "6+ Years", distance: "1.8 km away", match: 94, image: danielImg },
+  { name: "Meera Patel", occupation: "Logistics Lead", experience: "5+ Years", distance: "2.4 km away", match: 91, image: meeraImg },
+  { name: "Joseph Kamau", occupation: "Rescue Paramedic", experience: "7+ Years", distance: "3.1 km away", match: 88, image: josephImg },
 ];
 
-const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard },
-  { label: "Needs Map", icon: MapPin },
+const navTop = [
+  { label: "Overview", icon: LayoutDashboard },
+  { label: "Needs Map", icon: MapPin, active: true },
   { label: "Volunteer Directory", icon: Users },
   { label: "Reports", icon: FileText },
-  { label: "Settings", icon: Settings },
+  { label: "Needs Handling", icon: ClipboardList },
+  { label: "Finance", icon: DatabaseZap },
+  { label: "Teams", icon: HandHeart },
 ];
 
-const stats = [
-  { label: "Total Impacted", value: "12,540", detail: "+18% this week", icon: TrendingUp, tone: "bg-primary text-primary-foreground" },
-  { label: "Active Tasks", value: "186", detail: "42 critical", icon: ClipboardList, tone: "bg-destructive text-destructive-foreground" },
-  { label: "Volunteer Utilization", value: "78%", detail: "312 responders", icon: Users, tone: "bg-accent text-accent-foreground" },
+const quickStats = [
+  { label: "TOTAL IMPACTED", value: "142", detail: "+ 12.73%", icon: ArrowUpRight, tone: "bg-primary text-primary-foreground", iconTone: "bg-primary-foreground/15" },
+  { label: "ACTIVE TASKS", value: "892", detail: "+ 30.32%", icon: ArrowUpRight, tone: "bg-secondary text-secondary-foreground", iconTone: "bg-primary/10" },
+  { label: "VOLUNTEER UTILIZATION", value: "78.5%", detail: "Live capacity", icon: Gauge, tone: "bg-muted text-foreground", iconTone: "bg-card" },
+  { label: "DATA ACCURACY INDEX", value: "98.4", detail: "Verified", icon: CheckCircle2, tone: "bg-accent text-accent-foreground", iconTone: "bg-card/50" },
+];
+
+const projects = [
+  { name: "Relief kitchens", start: "col-start-1", span: "col-span-4", tone: "bg-primary" },
+  { name: "Medical tents", start: "col-start-2", span: "col-span-5", tone: "bg-accent" },
+  { name: "Water points", start: "col-start-4", span: "col-span-4", tone: "bg-primary" },
 ];
 
 const Index = () => {
@@ -61,91 +94,107 @@ const Index = () => {
   );
 
   useEffect(() => {
-    mapRef.current?.easeTo({ center: selectedNeed.coordinates, zoom: 12.4, pitch: mapStyle === "openstreetmap3d" ? 60 : 0, duration: 500 });
+    mapRef.current?.easeTo({ center: selectedNeed.coordinates, zoom: 11.8, pitch: mapStyle === "openstreetmap3d" ? 60 : 0, duration: 500 });
   }, [selectedNeed, mapStyle]);
 
   return (
-    <main className="min-h-screen bg-field-gradient text-foreground">
-      <div className="grid min-h-screen lg:grid-cols-[260px_1fr]">
-        <aside className="hidden border-r border-border bg-card/85 p-5 shadow-soft backdrop-blur lg:block">
-          <div className="mb-8 flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-soft"><Waves className="size-5" /></div>
-            <div><p className="text-sm font-semibold">ReliefGrid</p><p className="text-xs text-muted-foreground">Impact Command</p></div>
+    <main className="min-h-screen bg-background text-foreground">
+      <div className="grid min-h-screen grid-cols-[88px_minmax(0,1fr)] xl:grid-cols-[258px_minmax(0,1fr)]">
+        <aside className="flex min-h-screen flex-col border-r border-border bg-card px-3 py-5 shadow-soft xl:px-5">
+          <div className="mb-7 flex items-center justify-center gap-3 xl:justify-start">
+            <div className="flex size-11 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-soft"><Waves className="size-5" /></div>
+            <div className="hidden xl:block"><p className="text-sm font-semibold">The Human Company</p><p className="text-xs text-muted-foreground">Disaster response OS</p></div>
           </div>
-          <nav className="space-y-2">
-            {navItems.map((item, index) => (
-              <button key={item.label} className={`flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm transition hover:bg-secondary ${index === 0 ? "bg-secondary font-semibold text-primary" : "text-muted-foreground"}`}>
-                <item.icon className="size-4" />{item.label}
+          <nav className="flex-1 space-y-1.5">
+            {navTop.map((item) => (
+              <button key={item.label} className={`flex h-11 w-full items-center justify-center gap-3 rounded-lg px-3 text-sm transition hover:bg-secondary xl:justify-start ${item.active ? "bg-primary text-primary-foreground shadow-soft" : "text-muted-foreground"}`}>
+                <item.icon className="size-4 shrink-0" /><span className="hidden truncate xl:inline">{item.label}</span>
               </button>
             ))}
           </nav>
+          <div className="space-y-1.5 border-t border-border pt-4">
+            {["About", "Settings"].map((label, index) => {
+              const Icon = index === 0 ? ShieldCheck : Settings;
+              return <button key={label} className="flex h-11 w-full items-center justify-center gap-3 rounded-lg px-3 text-sm text-muted-foreground transition hover:bg-secondary xl:justify-start"><Icon className="size-4" /><span className="hidden xl:inline">{label}</span></button>;
+            })}
+            <Button variant="command" className="mt-3 h-11 w-full px-0 xl:px-4"><Siren className="size-4" /><span className="hidden xl:inline">Deploy Responders</span></Button>
+          </div>
         </aside>
 
-        <section className="min-w-0 p-4 sm:p-6 lg:p-8">
-          <header className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div><p className="text-sm font-semibold text-primary">Intelligence Command Center</p><h1 className="max-w-3xl text-3xl font-semibold tracking-normal sm:text-4xl">Real-time Relief Operations Map</h1></div>
+        <section className="min-w-0 p-4 sm:p-5 xl:p-7">
+          <header className="mb-5 flex flex-col gap-4 rounded-lg border border-border bg-card/90 p-3 shadow-soft xl:flex-row xl:items-center xl:justify-between">
+            <nav className="flex flex-wrap gap-2 text-sm font-medium">
+              {["Community Pulse", "Analytics", "Analytics", "Resource Allocation"].map((label, index) => <button key={`${label}-${index}`} className={`rounded-md px-3 py-2 transition ${index === 0 ? "bg-secondary text-primary" : "text-muted-foreground hover:bg-secondary"}`}>{label}</button>)}
+            </nav>
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex min-w-64 items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-soft"><Search className="size-4 text-muted-foreground" /><span className="text-sm text-muted-foreground">Search issues, wards, volunteers</span></div>
-              <button className="relative rounded-lg border border-border bg-card p-3 shadow-soft"><Bell className="size-4" /><span className="absolute right-2 top-2 size-2 rounded-full bg-destructive" /></button>
+              <label className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 shadow-soft sm:min-w-64"><Search className="size-4 text-muted-foreground" /><input aria-label="Search coordinates" placeholder="Search coordinates" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" /></label>
+              <button className="relative rounded-lg border border-border bg-background p-3 shadow-soft"><Bell className="size-4" /><span className="absolute right-2 top-2 size-2 rounded-full bg-destructive" /></button>
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-background p-1.5 pr-3 shadow-soft"><img src={aishaImg} alt="User profile avatar" className="size-8 rounded-md object-cover" /><span className="hidden text-sm font-semibold sm:inline">Maya Rao</span></div>
             </div>
           </header>
 
-          <div className="mb-6 grid gap-3 sm:grid-cols-3">
-            {stats.map((stat) => (
-              <div key={stat.label} className={`${stat.tone} rounded-lg p-4 shadow-panel`}>
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm opacity-90">{stat.label}</p>
-                    <p className="text-3xl font-semibold tracking-normal">{stat.value}</p>
-                  </div>
-                  <div className="flex size-11 items-center justify-center rounded-lg bg-card/20"><stat.icon className="size-5" /></div>
-                </div>
-                <p className="mt-3 text-xs font-medium opacity-90">{stat.detail}</p>
-              </div>
+          <div className="mb-5 grid gap-3 sm:grid-cols-2 2xl:grid-cols-4">
+            {quickStats.map((stat) => (
+              <article key={stat.label} className={`${stat.tone} min-h-32 rounded-lg p-4 shadow-panel`}>
+                <div className="flex items-start justify-between gap-3"><p className="text-xs font-bold tracking-wide opacity-80">{stat.label}</p><div className={`flex size-9 items-center justify-center rounded-lg ${stat.iconTone}`}><stat.icon className="size-4" /></div></div>
+                <div className="mt-5 flex items-end justify-between gap-3"><p className="text-4xl font-semibold tracking-normal">{stat.value}</p>{stat.label.includes("UTILIZATION") && <div className="grid size-14 place-items-center rounded-full border-[6px] border-primary bg-card text-xs font-bold text-primary">78%</div>}</div>
+                <p className="mt-3 flex items-center gap-1 text-sm font-semibold"><ArrowUpRight className="size-4" />{stat.detail}</p>
+              </article>
             ))}
           </div>
 
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
-            <div className="overflow-hidden rounded-lg border border-border bg-card shadow-panel">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-4">
-                <div><p className="font-semibold">Live Map</p><p className="text-sm text-muted-foreground">Cluster markers update the priority feed by viewport</p></div>
-                <select value={mapStyle} onChange={(event) => setMapStyle(event.target.value as typeof mapStyle)} className="rounded-md border border-border bg-background px-3 py-2 text-sm shadow-soft">
-                  <option value="default">Default (Carto)</option><option value="openstreetmap">OpenStreetMap</option><option value="openstreetmap3d">OpenStreetMap 3D</option>
-                </select>
-              </div>
-              <div className="relative h-[500px]">
-                <Map ref={mapRef} mapStyle={styles[mapStyle]} initialViewState={{ longitude: 77.209, latitude: 28.6139, zoom: 11.4 }}>
-                  <NavigationControl position="bottom-right" />
-                  {needs.map((need) => <Marker key={need.id} longitude={need.coordinates[0]} latitude={need.coordinates[1]} anchor="center"><button onClick={() => setSelectedNeed(need)} className="relative flex size-12 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-panel transition hover:scale-110"><span className="absolute inset-0 rounded-full bg-destructive/40 motion-safe-only animate-pulse-ring" /><span className="relative text-xs font-bold">{need.score}</span></button></Marker>)}
+          <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_520px]">
+            <section className="overflow-hidden rounded-lg border border-border bg-card shadow-panel">
+              <div className="relative h-[520px] min-h-[420px]">
+                <Map ref={mapRef} mapStyle={styles[mapStyle]} initialViewState={{ longitude: 72.8656, latitude: 19.0607, zoom: 10.7 }}>
+                  {needs.map((need, index) => (
+                    <Marker key={need.id} longitude={need.coordinates[0]} latitude={need.coordinates[1]} anchor="bottom">
+                      <button onClick={() => setSelectedNeed(need)} className="group relative flex flex-col items-center">
+                        <span className="mb-1 rounded-full bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground shadow-panel">{[257, 209, 99, 39][index]}</span>
+                        <span className="relative grid size-9 place-items-center rounded-full bg-destructive text-destructive-foreground shadow-panel transition group-hover:-translate-y-1"><span className="absolute inset-0 rounded-full bg-destructive/40 motion-safe-only animate-pulse-ring" /><MapPin className="relative size-5 fill-current" /></span>
+                      </button>
+                    </Marker>
+                  ))}
                 </Map>
-                <div className="absolute left-4 top-4 rounded-lg border border-border bg-card/95 p-4 shadow-soft backdrop-blur"><p className="text-sm font-semibold">{selectedNeed.zone}</p><p className="text-xs text-muted-foreground">Coordinates: [{selectedNeed.coordinates.join(", ")}]</p></div>
+                <div className="absolute left-4 top-4 max-w-[280px] rounded-lg border border-border bg-card/95 p-4 shadow-soft backdrop-blur"><p className="text-sm font-semibold">Mumbai Needs Map</p><p className="text-xs text-muted-foreground">Active: {selectedNeed.zone} · [{selectedNeed.coordinates.join(", ")}]</p></div>
+                <div className="absolute right-4 top-4 flex flex-wrap gap-1 rounded-full border border-border bg-card/95 p-1 shadow-soft backdrop-blur">
+                  {Object.keys(styles).map((style) => <button key={style} onClick={() => setMapStyle(style as typeof mapStyle)} className={`rounded-full px-3 py-2 text-xs font-semibold transition ${mapStyle === style ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}>{style === "openstreetmap3d" ? "3D View" : style === "openstreetmap" ? "OpenStreetMap" : "Default (Carto)"}</button>)}
+                </div>
               </div>
-            </div>
+            </section>
 
-            <aside className="space-y-4">
-              <div className="rounded-lg border border-border bg-card p-4 shadow-soft">
-                <div className="mb-3 flex items-center justify-between"><p className="font-semibold">Priority Feed</p><Filter className="size-4 text-muted-foreground" /></div>
-                <div className="space-y-3">{needs.map((need) => <button key={need.id} onClick={() => setSelectedNeed(need)} className={`w-full rounded-lg border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-soft ${selectedNeed.id === need.id ? "border-primary bg-secondary" : "border-border bg-background"}`}><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{need.title}</p><p className="text-xs text-muted-foreground">#{need.id} · {need.reports} field reports · {need.impacted} impacted</p></div><span className="rounded-md bg-alert-gradient px-2 py-1 text-xs font-bold text-destructive-foreground">{need.score}/10</span></div></button>)}</div>
-              </div>
+            <aside className="space-y-5 overflow-hidden">
+              <section className="rounded-lg border border-border bg-card p-4 shadow-panel">
+                <div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold">Priority Feed</h2><Crosshair className="size-4 text-destructive" /></div>
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {needs.map((need) => <article key={need.id} className="min-w-56 rounded-lg border border-destructive/20 bg-background p-3 shadow-[0_0_28px_hsl(var(--destructive)/0.18)]"><p className="text-sm font-semibold">{need.title}</p><p className="mt-3 text-xs font-bold text-destructive">URGENCY SCORE</p><p className="text-2xl font-semibold text-destructive">{need.score}/10</p><div className="mt-3 space-y-1 text-xs text-muted-foreground"><p className="font-semibold text-foreground">EME Sane Doe</p><p>Logistic Marked Shorting</p><p>{need.impacted}+ tcs</p><p>5+ Years</p></div><Button variant="command" size="sm" className="mt-3 h-8 w-full" onClick={() => setSelectedNeed(need)}>Assign</Button></article>)}
+                </div>
+              </section>
 
-              <div className="rounded-lg border border-border bg-card p-4 shadow-soft animate-slide-up">
-                <p className="text-sm font-semibold text-primary">Issue #{selectedNeed.id}: {selectedNeed.title}</p>
-                <p className="mt-2 text-sm text-muted-foreground">AI summary: multiple field reports indicate urgent {selectedNeed.type.toLowerCase()} support needs in {selectedNeed.zone}, with vulnerable households requiring dispatch within 4 hours.</p>
-                <div className="mt-4 flex gap-2"><Button variant="command" className="flex-1">Dispatch Resources</Button><Button variant="quiet" size="icon"><Radio className="size-4" /></Button></div>
-              </div>
+              <section className="rounded-lg border border-border bg-card p-4 shadow-panel">
+                <div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold">Volunteers Near Area</h2><Users className="size-4 text-primary" /></div>
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {volunteers.map((volunteer) => <article key={volunteer.name} className="min-w-56 rounded-lg border border-border bg-background p-3 shadow-soft"><div className="flex items-center gap-3"><div className="relative"><img src={volunteer.image} alt={`${volunteer.name}, ${volunteer.occupation}`} loading="lazy" className="size-12 rounded-full object-cover" /><span className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full bg-primary text-primary-foreground"><Check className="size-3" /></span></div><div className="min-w-0"><p className="truncate text-sm font-semibold">{volunteer.name}</p><p className="truncate text-xs text-muted-foreground">{volunteer.occupation}</p></div></div><div className="mt-3 flex flex-wrap gap-2 text-xs"><span className="rounded-full bg-secondary px-2 py-1 font-semibold text-primary">{volunteer.distance}</span><span className="rounded-full bg-muted px-2 py-1">{volunteer.experience}</span><span className="rounded-full bg-accent px-2 py-1 font-semibold text-accent-foreground">Skill-match {volunteer.match}%</span></div><Button variant="command" size="sm" className="mt-3 h-8 w-full">Assign</Button></article>)}
+                </div>
+              </section>
             </aside>
           </div>
 
-          <section className="mt-6 rounded-lg border border-border bg-panel-gradient p-4 shadow-panel">
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-semibold">Recommended Volunteers Near Affected Area</p><p className="text-sm text-muted-foreground">Compact match list ranked by proximity, skill, and language fit</p></div><Button variant="command"><CheckCircle2 className="size-4" />Assign All</Button></div>
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              {volunteers.map((volunteer) => <article key={volunteer.name} className="rounded-lg border border-border bg-card p-3 shadow-soft transition hover:-translate-y-0.5 hover:border-primary hover:shadow-panel"><div className="flex items-center gap-3"><img src={volunteer.image} alt={`${volunteer.name}, ${volunteer.occupation}`} width={96} height={96} loading="lazy" className="size-14 shrink-0 rounded-lg object-cover" /><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2"><div className="min-w-0"><h2 className="truncate text-sm font-semibold">{volunteer.name}</h2><p className="truncate text-xs text-muted-foreground">{volunteer.occupation}</p></div><span className="rounded-md bg-secondary px-2 py-1 text-xs font-semibold text-primary">{volunteer.match}%</span></div><div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs"><p><span className="text-muted-foreground">Dist:</span> <span className="font-semibold">{volunteer.distance}</span></p><p><span className="text-muted-foreground">Exp:</span> <span className="font-semibold">{volunteer.experience}</span></p><p className="col-span-2 truncate"><span className="text-muted-foreground">Lang:</span> <span className="font-semibold">{volunteer.language}</span></p></div></div></div></article>)}
-            </div>
-          </section>
+          <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <section className="rounded-lg border border-border bg-card p-4 shadow-panel">
+              <div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold">Active Projects</h2><CalendarDays className="size-4 text-primary" /></div>
+              <div className="grid grid-cols-[132px_repeat(8,minmax(44px,1fr))] gap-y-4 overflow-x-auto text-xs">
+                <div />{["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"].map((month) => <div key={month} className="text-center font-semibold text-muted-foreground">{month}</div>)}
+                {projects.map((project) => <div key={project.name} className="contents"><p className="py-2 font-medium">{project.name}</p><div className="col-span-8 grid grid-cols-8 items-center border-l border-border"><span className={`${project.start} ${project.span} h-3 rounded-full ${project.tone} shadow-soft`} /></div></div>)}
+              </div>
+            </section>
+            <section className="rounded-lg border border-border bg-card p-4 shadow-panel">
+              <div className="mb-5 flex items-center justify-between"><h2 className="text-lg font-semibold">Resource Inventory</h2><Package className="size-4 text-primary" /></div>
+              <div className="grid gap-3"><div className="rounded-lg bg-secondary p-4"><p className="text-xs font-bold text-muted-foreground">Reports · Headers 600</p><p className="mt-2 text-3xl font-semibold">$1,787</p></div><div className="rounded-lg bg-muted p-4"><p className="text-xs font-bold text-muted-foreground">Data Accuracy Index</p><p className="mt-2 text-3xl font-semibold">39</p></div></div>
+            </section>
+          </div>
 
-          <section className="mt-6 grid gap-4 md:grid-cols-3">
-            {["Report Needs", "My Tasks", "Sync Status"].map((label, index) => <button key={label} className="rounded-lg border border-border bg-card p-5 text-left shadow-soft transition hover:-translate-y-0.5 hover:bg-secondary"><ClipboardList className="mb-3 size-5 text-primary" /><p className="font-semibold">{label}</p><p className="text-sm text-muted-foreground">{index === 2 ? "OCR digitized · waiting for connectivity" : "Offline-first field workflow ready"}</p>{index === 2 && <div className="mt-3 flex items-center gap-2 text-sm text-primary"><Wifi className="size-4" />Sync queued</div>}</button>)}
-          </section>
+          <footer className="mt-5 flex items-center justify-between"><Button variant="quiet"><Settings className="size-4" />Settings</Button><Button variant="command"><RefreshCw className="size-4" />Refresh</Button></footer>
         </section>
       </div>
     </main>
