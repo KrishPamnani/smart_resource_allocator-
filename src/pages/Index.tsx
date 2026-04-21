@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Bell, CheckCircle2, ClipboardList, Filter, LayoutDashboard, MapPin, Radio, Search, Settings, Users, FileText, Waves, Wifi } from "lucide-react";
+import { Bell, CheckCircle2, ClipboardList, Filter, LayoutDashboard, MapPin, Radio, Search, Settings, TrendingUp, Users, FileText, Waves, Wifi } from "lucide-react";
 import { Marker, NavigationControl } from "react-map-gl/maplibre";
 
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,12 @@ const navItems = [
   { label: "Settings", icon: Settings },
 ];
 
+const stats = [
+  { label: "Total Impacted", value: "12,540", detail: "+18% this week", icon: TrendingUp, tone: "bg-primary text-primary-foreground" },
+  { label: "Active Tasks", value: "186", detail: "42 critical", icon: ClipboardList, tone: "bg-destructive text-destructive-foreground" },
+  { label: "Volunteer Utilization", value: "78%", detail: "312 responders", icon: Users, tone: "bg-accent text-accent-foreground" },
+];
+
 const Index = () => {
   const mapRef = useRef<MapRef>(null);
   const [selectedNeed, setSelectedNeed] = useState(needs[0]);
@@ -61,7 +67,7 @@ const Index = () => {
   return (
     <main className="min-h-screen bg-field-gradient text-foreground">
       <div className="grid min-h-screen lg:grid-cols-[260px_1fr]">
-        <aside className="hidden border-r border-border bg-card/80 p-5 shadow-soft backdrop-blur lg:block">
+        <aside className="hidden border-r border-border bg-card/85 p-5 shadow-soft backdrop-blur lg:block">
           <div className="mb-8 flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-soft"><Waves className="size-5" /></div>
             <div><p className="text-sm font-semibold">ReliefGrid</p><p className="text-xs text-muted-foreground">Impact Command</p></div>
@@ -77,18 +83,29 @@ const Index = () => {
 
         <section className="min-w-0 p-4 sm:p-6 lg:p-8">
           <header className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div><p className="text-sm font-semibold text-primary">Intelligence Command Center</p><h1 className="text-3xl font-semibold tracking-normal sm:text-4xl">Needs Map & Volunteer Matching</h1></div>
+            <div><p className="text-sm font-semibold text-primary">Intelligence Command Center</p><h1 className="max-w-3xl text-3xl font-semibold tracking-normal sm:text-4xl">Real-time Relief Operations Map</h1></div>
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex min-w-64 items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-soft"><Search className="size-4 text-muted-foreground" /><span className="text-sm text-muted-foreground">Search issues, wards, volunteers</span></div>
               <button className="relative rounded-lg border border-border bg-card p-3 shadow-soft"><Bell className="size-4" /><span className="absolute right-2 top-2 size-2 rounded-full bg-destructive" /></button>
             </div>
           </header>
 
-          <div className="mb-6 grid gap-4 sm:grid-cols-3">
-            {["12,540 Total Impacted", "186 Active Tasks", "78% Volunteer Utilization"].map((stat) => <div key={stat} className="rounded-lg border border-border bg-card/90 p-4 shadow-soft"><p className="text-2xl font-semibold">{stat.split(" ")[0]}</p><p className="text-sm text-muted-foreground">{stat.substring(stat.indexOf(" ") + 1)}</p></div>)}
+          <div className="mb-6 grid gap-3 sm:grid-cols-3">
+            {stats.map((stat) => (
+              <div key={stat.label} className={`${stat.tone} rounded-lg p-4 shadow-panel`}>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm opacity-90">{stat.label}</p>
+                    <p className="text-3xl font-semibold tracking-normal">{stat.value}</p>
+                  </div>
+                  <div className="flex size-11 items-center justify-center rounded-lg bg-card/20"><stat.icon className="size-5" /></div>
+                </div>
+                <p className="mt-3 text-xs font-medium opacity-90">{stat.detail}</p>
+              </div>
+            ))}
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
             <div className="overflow-hidden rounded-lg border border-border bg-card shadow-panel">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-4">
                 <div><p className="font-semibold">Live Map</p><p className="text-sm text-muted-foreground">Cluster markers update the priority feed by viewport</p></div>
@@ -96,7 +113,7 @@ const Index = () => {
                   <option value="default">Default (Carto)</option><option value="openstreetmap">OpenStreetMap</option><option value="openstreetmap3d">OpenStreetMap 3D</option>
                 </select>
               </div>
-              <div className="relative h-[520px]">
+              <div className="relative h-[500px]">
                 <Map ref={mapRef} mapStyle={styles[mapStyle]} initialViewState={{ longitude: 77.209, latitude: 28.6139, zoom: 11.4 }}>
                   <NavigationControl position="bottom-right" />
                   {needs.map((need) => <Marker key={need.id} longitude={need.coordinates[0]} latitude={need.coordinates[1]} anchor="center"><button onClick={() => setSelectedNeed(need)} className="relative flex size-12 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-panel transition hover:scale-110"><span className="absolute inset-0 rounded-full bg-destructive/40 motion-safe-only animate-pulse-ring" /><span className="relative text-xs font-bold">{need.score}</span></button></Marker>)}
@@ -120,9 +137,9 @@ const Index = () => {
           </div>
 
           <section className="mt-6 rounded-lg border border-border bg-panel-gradient p-4 shadow-panel">
-            <div className="mb-4 flex items-center justify-between"><div><p className="font-semibold">Recommended Volunteers Near Affected Area</p><p className="text-sm text-muted-foreground">Ranked by proximity, occupation, language, and field experience</p></div><Button variant="command"><CheckCircle2 className="size-4" />Assign All</Button></div>
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {volunteers.map((volunteer) => <article key={volunteer.name} className="rounded-lg border border-border bg-card p-4 shadow-soft transition hover:-translate-y-1 hover:shadow-panel"><img src={volunteer.image} alt={`${volunteer.name}, ${volunteer.occupation}`} width={768} height={768} loading="lazy" className="mb-3 aspect-square w-full rounded-lg object-cover" /><div className="flex items-start justify-between gap-2"><div><h2 className="font-semibold">{volunteer.name}</h2><p className="text-sm text-muted-foreground">{volunteer.occupation}</p></div><span className="rounded-md bg-secondary px-2 py-1 text-xs font-semibold text-primary">{volunteer.match}%</span></div><dl className="mt-3 grid grid-cols-2 gap-2 text-sm"><div><dt className="text-muted-foreground">Distance</dt><dd className="font-semibold">{volunteer.distance}</dd></div><div><dt className="text-muted-foreground">Experience</dt><dd className="font-semibold">{volunteer.experience}</dd></div><div><dt className="text-muted-foreground">Language</dt><dd className="font-semibold">{volunteer.language}</dd></div><div><dt className="text-muted-foreground">Status</dt><dd className="font-semibold">{volunteer.status}</dd></div></dl></article>)}
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-semibold">Recommended Volunteers Near Affected Area</p><p className="text-sm text-muted-foreground">Compact match list ranked by proximity, skill, and language fit</p></div><Button variant="command"><CheckCircle2 className="size-4" />Assign All</Button></div>
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {volunteers.map((volunteer) => <article key={volunteer.name} className="rounded-lg border border-border bg-card p-3 shadow-soft transition hover:-translate-y-0.5 hover:border-primary hover:shadow-panel"><div className="flex items-center gap-3"><img src={volunteer.image} alt={`${volunteer.name}, ${volunteer.occupation}`} width={96} height={96} loading="lazy" className="size-14 shrink-0 rounded-lg object-cover" /><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2"><div className="min-w-0"><h2 className="truncate text-sm font-semibold">{volunteer.name}</h2><p className="truncate text-xs text-muted-foreground">{volunteer.occupation}</p></div><span className="rounded-md bg-secondary px-2 py-1 text-xs font-semibold text-primary">{volunteer.match}%</span></div><div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs"><p><span className="text-muted-foreground">Dist:</span> <span className="font-semibold">{volunteer.distance}</span></p><p><span className="text-muted-foreground">Exp:</span> <span className="font-semibold">{volunteer.experience}</span></p><p className="col-span-2 truncate"><span className="text-muted-foreground">Lang:</span> <span className="font-semibold">{volunteer.language}</span></p></div></div></div></article>)}
             </div>
           </section>
 
