@@ -7,15 +7,13 @@ import { cn } from "@/lib/utils";
 
 const DEFAULT_STYLE = "https://tiles.openfreemap.org/styles/bright";
 
-const Map = React.forwardRef<MapRef, MapProps>(({ className, mapStyle, ...props }, ref) => {
+type AppMapProps = MapProps & { className?: string };
+
+const Map = React.forwardRef<MapRef, AppMapProps>(({ className, mapStyle, ...props }, ref) => {
   return (
-    <MapGL
-      ref={ref}
-      mapStyle={mapStyle ?? DEFAULT_STYLE}
-      className={cn("h-full w-full", className)}
-      attributionControl={false}
-      {...props}
-    />
+    <div className={cn("h-full w-full", className)}>
+      <MapGL ref={ref} mapStyle={mapStyle ?? DEFAULT_STYLE} attributionControl={false} {...props} />
+    </div>
   );
 });
 
