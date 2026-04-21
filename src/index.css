@@ -8,35 +8,44 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 150 25% 97%;
+    --foreground: 153 28% 13%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 153 28% 13%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 153 28% 13%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 153 40% 30%;
+    --primary-foreground: 150 33% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 120 17% 86%;
+    --secondary-foreground: 153 35% 22%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 150 22% 92%;
+    --muted-foreground: 154 12% 42%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 44 95% 62%;
+    --accent-foreground: 153 33% 13%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 355 78% 56%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 145 19% 84%;
+    --input: 145 19% 84%;
+    --ring: 153 40% 30%;
 
     --radius: 0.5rem;
+    --success: 151 54% 45%;
+    --warning: 38 92% 55%;
+    --critical: 355 78% 56%;
+    --map-water: 189 49% 56%;
+    --gradient-field: linear-gradient(135deg, hsl(150 25% 97%), hsl(120 17% 86%));
+    --gradient-panel: linear-gradient(180deg, hsl(0 0% 100% / 0.98), hsl(150 22% 96% / 0.94));
+    --gradient-alert: linear-gradient(135deg, hsl(355 78% 56%), hsl(24 86% 55%));
+    --shadow-soft: 0px 4px 12px hsl(0 0% 0% / 0.05);
+    --shadow-panel: 0px 18px 45px hsl(153 40% 18% / 0.12);
 
     --sidebar-background: 0 0% 98%;
 
@@ -101,5 +110,20 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .mapboxgl-control-container,
+  .maplibregl-control-container {
+    @apply hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .motion-safe-only {
+      animation: none !important;
+      transition: none !important;
+    }
   }
 }
