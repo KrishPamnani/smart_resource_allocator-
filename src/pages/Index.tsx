@@ -238,11 +238,11 @@ const Index = () => {
             </article>
           </div>
 
-          {/* CENTRAL ZONE — Map 75% / Side 25% */}
-          <div className="grid gap-4 xl:grid-cols-[3fr_1fr]">
-            {/* MAP */}
+          {/* CENTRAL ZONE — Map + Priority Feed + Volunteers (right) */}
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1fr)]">
+            {/* MAP — smaller */}
             <section className="overflow-hidden rounded-md border border-border bg-card shadow-soft">
-              <div className="relative h-[560px] min-h-[460px]">
+              <div className="relative h-[460px] min-h-[400px]">
                 <Map
                   ref={mapRef}
                   mapStyle={styles[mapStyle]}
@@ -262,17 +262,11 @@ const Index = () => {
                     </Marker>
                   ))}
                 </Map>
-                {/* Floating info-box */}
-                <div className="absolute left-4 top-4 max-w-[280px] rounded-md border border-border bg-card/95 p-3 shadow-soft backdrop-blur">
+                <div className="absolute left-4 top-4 max-w-[260px] rounded-md border border-border bg-card/95 p-3 shadow-soft backdrop-blur">
                   <p className="text-sm font-semibold">Mumbai Needs Map</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    Active: {selectedNeed.zone}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    [{selectedNeed.coordinates.join(", ")}]
-                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">Active: {selectedNeed.zone}</p>
+                  <p className="text-[11px] text-muted-foreground">[{selectedNeed.coordinates.join(", ")}]</p>
                 </div>
-                {/* Pill style switcher */}
                 <div className="absolute right-4 top-4 flex flex-wrap gap-1 rounded-full border border-border bg-card/95 p-1 shadow-soft backdrop-blur">
                   {(Object.keys(styles) as Array<keyof typeof styles>).map((style) => (
                     <button
@@ -289,93 +283,93 @@ const Index = () => {
               </div>
             </section>
 
-            {/* RIGHT COLUMN — vertical stack */}
-            <aside className="flex flex-col gap-4">
-              {/* PRIORITY FEED */}
-              <section className="rounded-md border border-border bg-card p-3.5 shadow-soft">
-                <div className="mb-3 flex items-center justify-between">
-                  <h2 className="text-sm font-semibold">Priority Feed</h2>
-                  <Crosshair className="size-4 text-destructive" />
-                </div>
-                <div className="space-y-2.5 max-h-[260px] overflow-y-auto pr-1">
-                  {needs.map((need) => (
-                    <article
-                      key={need.id}
-                      className={`rounded-md border p-2.5 transition cursor-pointer ${
-                        selectedNeed.id === need.id
-                          ? "border-destructive/40 bg-destructive/5 shadow-[0_0_18px_hsl(var(--destructive)/0.18)]"
-                          : "border-border bg-background hover:border-destructive/30"
-                      }`}
-                      onClick={() => setSelectedNeed(need)}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="text-xs font-semibold truncate">Needs Detail & Match</p>
-                          <p className="mt-0.5 text-[11px] text-muted-foreground truncate">
-                            #{need.id} · {need.zone}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-[10px] font-bold text-destructive">URGENCY</p>
-                          <p className="text-base font-bold leading-none text-destructive">{need.score}</p>
-                        </div>
+            {/* PRIORITY FEED */}
+            <section className="rounded-md border border-border bg-card p-3.5 shadow-soft">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-sm font-semibold">Priority Feed</h2>
+                <Crosshair className="size-4 text-destructive" />
+              </div>
+              <div className="space-y-2.5 max-h-[400px] overflow-y-auto pr-1">
+                {needs.map((need) => (
+                  <article
+                    key={need.id}
+                    className={`rounded-md border p-2.5 transition cursor-pointer ${
+                      selectedNeed.id === need.id
+                        ? "border-destructive/40 bg-destructive/5 shadow-[0_0_18px_hsl(var(--destructive)/0.18)]"
+                        : "border-border bg-background hover:border-destructive/30"
+                    }`}
+                    onClick={() => setSelectedNeed(need)}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold truncate">Needs Detail & Match</p>
+                        <p className="mt-0.5 text-[11px] text-muted-foreground truncate">
+                          #{need.id} · {need.zone}
+                        </p>
                       </div>
-                      <div className="mt-2 flex items-center justify-between">
-                        <p className="text-[11px] text-muted-foreground">{need.impacted}+ impacted</p>
-                        <Button variant="command" size="sm" className="h-7 rounded-md px-3 text-xs">
-                          Assign
-                        </Button>
+                      <div className="text-right">
+                        <p className="text-[10px] font-bold text-destructive">URGENCY</p>
+                        <p className="text-base font-bold leading-none text-destructive">{need.score}</p>
                       </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
-
-              {/* VOLUNTEERS — horizontal scroll */}
-              <section className="rounded-md border border-border bg-card p-3.5 shadow-soft">
-                <div className="mb-3 flex items-center justify-between">
-                  <h2 className="text-sm font-semibold">Volunteers Near Area</h2>
-                  <Users className="size-4 text-primary" />
-                </div>
-                <div className="flex gap-2.5 overflow-x-auto pb-1">
-                  {volunteers.map((v) => (
-                    <article
-                      key={v.name}
-                      className="min-w-[180px] shrink-0 rounded-md border border-border bg-background p-2.5"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="relative shrink-0">
-                          <img
-                            src={v.image}
-                            alt={v.name}
-                            loading="lazy"
-                            className="size-10 rounded-full object-cover"
-                          />
-                          <span className="absolute -right-0.5 -top-0.5 grid size-4 place-items-center rounded-full bg-primary text-primary-foreground">
-                            <Check className="size-2.5" />
-                          </span>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="truncate text-xs font-semibold">{v.name}</p>
-                          <p className="truncate text-[11px] text-muted-foreground">{v.occupation}</p>
-                        </div>
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-primary">
-                          {v.distance}
-                        </span>
-                        <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium">
-                          {v.experience}
-                        </span>
-                      </div>
-                      <Button variant="command" size="sm" className="mt-2 h-7 w-full rounded-md text-xs">
+                    </div>
+                    <div className="mt-2 flex items-center justify-between">
+                      <p className="text-[11px] text-muted-foreground">{need.impacted}+ impacted</p>
+                      <Button variant="command" size="sm" className="h-7 rounded-md px-3 text-xs">
                         Assign
                       </Button>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            </aside>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            {/* VOLUNTEERS — vertical list, right of map */}
+            <section className="rounded-md border border-border bg-card p-3.5 shadow-soft">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-sm font-semibold">Volunteers Near Area</h2>
+                <Users className="size-4 text-primary" />
+              </div>
+              <div className="space-y-2.5 max-h-[400px] overflow-y-auto pr-1">
+                {volunteers.map((v) => (
+                  <article
+                    key={v.name}
+                    className="rounded-md border border-border bg-background p-2.5"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="relative shrink-0">
+                        <img
+                          src={v.image}
+                          alt={v.name}
+                          loading="lazy"
+                          className="size-10 rounded-full object-cover"
+                        />
+                        <span className="absolute -right-0.5 -top-0.5 grid size-4 place-items-center rounded-full bg-primary text-primary-foreground">
+                          <Check className="size-2.5" />
+                        </span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-semibold">{v.name}</p>
+                        <p className="truncate text-[11px] text-muted-foreground">{v.occupation}</p>
+                      </div>
+                      <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">
+                        {v.match}%
+                      </span>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-primary">
+                        {v.distance}
+                      </span>
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium">
+                        {v.experience}
+                      </span>
+                    </div>
+                    <Button variant="command" size="sm" className="mt-2 h-7 w-full rounded-md text-xs">
+                      Assign
+                    </Button>
+                  </article>
+                ))}
+              </div>
+            </section>
           </div>
 
           {/* BOTTOM — Projects timeline + Inventory */}
