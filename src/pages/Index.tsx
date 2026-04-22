@@ -25,6 +25,7 @@ import { Marker } from "react-map-gl/maplibre";
 
 import { Button } from "@/components/ui/button";
 import { Map, type MapRef } from "@/components/ui/map";
+import Testimonials from "@/components/Testimonials";
 import aishaImg from "@/assets/volunteer-aisha.jpg";
 import danielImg from "@/assets/volunteer-daniel.jpg";
 import josephImg from "@/assets/volunteer-joseph.jpg";
@@ -92,8 +93,8 @@ const Index = () => {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="grid min-h-screen grid-cols-[72px_minmax(0,1fr)] xl:grid-cols-[240px_minmax(0,1fr)]">
-        {/* SIDEBAR */}
-        <aside className="flex min-h-screen flex-col border-r border-border bg-card px-3 py-5 xl:px-4">
+        {/* SIDEBAR — fixed, non-scrollable */}
+        <aside className="sticky top-0 flex h-screen flex-col overflow-hidden border-r border-border bg-card px-3 py-5 xl:px-4">
           <div className="mb-7 flex items-center justify-center gap-3 xl:justify-start">
             <div className="flex size-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <Waves className="size-5" />
@@ -103,7 +104,7 @@ const Index = () => {
               <p className="text-[11px] text-muted-foreground">Disaster response OS</p>
             </div>
           </div>
-          <nav className="flex-1 space-y-1">
+          <nav className="flex-1 space-y-1 overflow-hidden">
             {navTop.map((item) => (
               <button
                 key={item.label}
@@ -414,6 +415,8 @@ const Index = () => {
               Refresh
             </Button>
           </footer>
+
+          <Testimonials />
         </section>
       </div>
     </main>
