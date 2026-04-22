@@ -175,50 +175,66 @@ const Index = () => {
             </div>
           </header>
 
-          {/* QUICK STATS — 4 horizontal cards */}
+          {/* QUICK STATS — 4 white cards w/ left accent stripe */}
           <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {/* Card 1 — Forest Green */}
-            <article className="rounded-md bg-primary p-4 text-primary-foreground shadow-soft">
-              <p className="text-[11px] font-semibold uppercase tracking-wider opacity-80">Total Impacted</p>
-              <p className="mt-3 text-3xl font-semibold">142</p>
-              <p className="mt-2 flex items-center gap-1 text-xs font-medium opacity-90">
-                <TrendingUp className="size-3.5" /> + 12.73% vs last week
-              </p>
-            </article>
-
-            {/* Card 2 — Soft Sage */}
-            <article className="rounded-md bg-secondary p-4 text-secondary-foreground shadow-soft">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-primary/80">Active Tasks</p>
-              <p className="mt-3 text-3xl font-semibold text-primary">892</p>
-              <p className="mt-2 flex items-center gap-1 text-xs font-medium text-primary/80">
-                <TrendingUp className="size-3.5" /> + 30.32% throughput
-              </p>
-            </article>
-
-            {/* Card 3 — White with circular ring */}
-            <article className="flex items-center justify-between rounded-md border border-border bg-card p-4 shadow-soft">
+            {/* Card 1 — Total Urgent Needs (red accent) */}
+            <article className="relative flex items-center justify-between overflow-hidden rounded-md border border-border bg-card p-4 pl-5 shadow-soft">
+              <span className="absolute inset-y-0 left-0 w-1 bg-destructive" />
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Volunteer Util.</p>
-                <p className="mt-3 text-3xl font-semibold">78.5%</p>
-                <p className="mt-2 text-xs font-medium text-muted-foreground">Live capacity</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Total Urgent Needs</p>
+                <p className="mt-3 flex items-baseline gap-2">
+                  <span className="text-3xl font-semibold text-foreground">142</span>
+                  <span className="text-xs font-medium text-destructive">+12% vs last hr</span>
+                </p>
               </div>
-              <div
-                className="grid size-16 place-items-center rounded-full text-xs font-bold text-primary"
-                style={{
-                  background: `conic-gradient(hsl(var(--primary)) 0% 78.5%, hsl(var(--muted)) 78.5% 100%)`,
-                }}
-              >
-                <span className="grid size-12 place-items-center rounded-full bg-card">78%</span>
+              <div className="grid size-9 place-items-center rounded-md bg-destructive/10 text-destructive">
+                <Siren className="size-4" />
               </div>
             </article>
 
-            {/* Card 4 — Mustard / Accent */}
-            <article className="rounded-md bg-accent p-4 text-accent-foreground shadow-soft">
-              <p className="text-[11px] font-semibold uppercase tracking-wider opacity-80">Data Accuracy</p>
-              <p className="mt-3 text-3xl font-semibold">98.4</p>
-              <p className="mt-2 flex items-center gap-1 text-xs font-semibold">
-                <CheckCircle2 className="size-3.5" /> Verified
-              </p>
+            {/* Card 2 — Active Volunteers (green accent) */}
+            <article className="relative flex items-center justify-between overflow-hidden rounded-md border border-border bg-card p-4 pl-5 shadow-soft">
+              <span className="absolute inset-y-0 left-0 w-1 bg-primary" />
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Active Volunteers</p>
+                <p className="mt-3 flex items-baseline gap-2">
+                  <span className="text-3xl font-semibold text-foreground">892</span>
+                  <span className="text-xs font-medium text-muted-foreground">On-Site: 240</span>
+                </p>
+              </div>
+              <div className="grid size-9 place-items-center rounded-md bg-primary/10 text-primary">
+                <Users className="size-4" />
+              </div>
+            </article>
+
+            {/* Card 3 — Tasks Completed (blue accent) */}
+            <article className="relative flex items-center justify-between overflow-hidden rounded-md border border-border bg-card p-4 pl-5 shadow-soft">
+              <span className="absolute inset-y-0 left-0 w-1 bg-sky-500" />
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Tasks Completed</p>
+                <p className="mt-3 flex items-baseline gap-2">
+                  <span className="text-3xl font-semibold text-foreground">3,120</span>
+                  <span className="text-xs font-medium text-muted-foreground">94% Target</span>
+                </p>
+              </div>
+              <div className="grid size-9 place-items-center rounded-md bg-sky-500/10 text-sky-600">
+                <CheckCircle2 className="size-4" />
+              </div>
+            </article>
+
+            {/* Card 4 — Data Accuracy Index (mustard accent) */}
+            <article className="relative flex items-center justify-between overflow-hidden rounded-md border border-border bg-card p-4 pl-5 shadow-soft">
+              <span className="absolute inset-y-0 left-0 w-1 bg-accent" />
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Data Accuracy Index</p>
+                <p className="mt-3 flex items-baseline gap-2">
+                  <span className="text-3xl font-semibold text-foreground">98.4</span>
+                  <span className="text-xs font-medium text-muted-foreground">Verified Logs</span>
+                </p>
+              </div>
+              <div className="grid size-9 place-items-center rounded-md bg-accent/20 text-accent-foreground">
+                <ShieldCheck className="size-4" />
+              </div>
             </article>
           </div>
 
