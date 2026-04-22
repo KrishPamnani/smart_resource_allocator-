@@ -17,7 +17,6 @@ import {
   Settings,
   ShieldCheck,
   Siren,
-  TrendingUp,
   Users,
   Waves,
 } from "lucide-react";
