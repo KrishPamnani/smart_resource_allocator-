@@ -272,10 +272,18 @@ const Index = () => {
                     </Marker>
                   ))}
                 </Map>
-                <div className="absolute left-4 top-4 max-w-[260px] rounded-md border border-border bg-card/95 p-3 shadow-soft backdrop-blur">
-                  <p className="text-sm font-semibold">Mumbai Needs Map</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">Active: {selectedNeed.zone}</p>
-                  <p className="text-[11px] text-muted-foreground">[{selectedNeed.coordinates.join(", ")}]</p>
+                <div className="absolute left-4 top-4 flex items-center gap-2 rounded-md border border-border bg-card/95 px-3 py-2 shadow-soft backdrop-blur">
+                  <span className="grid size-7 place-items-center rounded-md bg-primary/10 text-primary">
+                    <MapPin className="size-3.5" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold leading-tight">Live Humanitarian Heatmap</p>
+                    <p className="text-[11px] text-muted-foreground">Active: {selectedNeed.zone}</p>
+                  </div>
+                </div>
+                <div className="absolute left-1/2 top-4 flex -translate-x-1/2 items-center gap-3 rounded-full border border-border bg-card/95 px-3 py-1.5 text-[11px] shadow-soft backdrop-blur">
+                  <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-destructive" /> Critical</span>
+                  <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-accent" /> Moderate</span>
                 </div>
                 <div className="absolute right-4 top-4 flex flex-wrap gap-1 rounded-full border border-border bg-card/95 p-1 shadow-soft backdrop-blur">
                   {(Object.keys(styles) as Array<keyof typeof styles>).map((style) => (
