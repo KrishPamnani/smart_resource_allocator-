@@ -1,30 +1,33 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Bell,
-  CalendarDays,
   Check,
   CheckCircle2,
   ClipboardList,
-  Crosshair,
   DatabaseZap,
   FileText,
   HandHeart,
   LayoutDashboard,
   MapPin,
-  Package,
   RefreshCw,
+  Rss,
   Search,
   Settings,
   ShieldCheck,
   Siren,
+  Sparkles,
+  Truck,
+  User,
   Users,
   Waves,
+  AlertCircle,
 } from "lucide-react";
 import { Marker } from "react-map-gl/maplibre";
 
 import { Button } from "@/components/ui/button";
 import { Map, type MapRef } from "@/components/ui/map";
 import Testimonials from "@/components/Testimonials";
+import ThemeToggle from "@/components/ThemeToggle";
 import aishaImg from "@/assets/volunteer-aisha.jpg";
 import danielImg from "@/assets/volunteer-daniel.jpg";
 import josephImg from "@/assets/volunteer-joseph.jpg";
@@ -65,11 +68,43 @@ const navTop = [
   { label: "Teams", icon: HandHeart },
 ];
 
-const projects = [
-  { name: "Relief kitchens", start: "col-start-1", span: "col-span-4", tone: "bg-primary" },
-  { name: "Medical tents", start: "col-start-2", span: "col-span-5", tone: "bg-accent" },
-  { name: "Water points", start: "col-start-4", span: "col-span-4", tone: "bg-primary" },
-  { name: "Shelter logistics", start: "col-start-5", span: "col-span-3", tone: "bg-accent" },
+const fieldReports = [
+  {
+    id: 1,
+    source: "SMS Gateway #421",
+    statement: "Critical water shortage in Sector 7. Immediate tanker support required for 200+ families.",
+    severity: "Critical",
+    tone: "destructive",
+    time: "2m ago",
+    icon: AlertCircle,
+  },
+  {
+    id: 2,
+    source: "Field Unit Alpha",
+    statement: "Logistics route blocked by fallen debris at Highway Intersection 4. Detour needed.",
+    severity: "Moderate",
+    tone: "accent",
+    time: "14m ago",
+    icon: Truck,
+  },
+  {
+    id: 3,
+    source: "Gov Satellite Feed",
+    statement: "Power restoration confirmed in Northeast quadrant. Communication towers active.",
+    severity: "Recovered",
+    tone: "success",
+    time: "32m ago",
+    icon: CheckCircle2,
+  },
+  {
+    id: 4,
+    source: "Paper Survey — Zone A",
+    statement: "Digitized intake: 38 households reporting medical triage needs near Cité Soleil shelter.",
+    severity: "Critical",
+    tone: "destructive",
+    time: "47m ago",
+    icon: FileText,
+  },
 ];
 
 const Index = () => {
@@ -167,10 +202,17 @@ const Index = () => {
                 <Bell className="size-4" />
                 <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-destructive" />
               </button>
-              <div className="flex items-center gap-2 rounded-md border border-border bg-background p-1 pr-3">
-                <img src={aishaImg} alt="Maya Rao" className="size-7 rounded-sm object-cover" />
-                <span className="hidden text-sm font-semibold sm:inline">Maya Rao</span>
-              </div>
+              <ThemeToggle />
+              <button
+                type="button"
+                aria-label="Profile"
+                className="flex items-center gap-2 rounded-md border border-border bg-background p-1.5 pr-3 transition hover:bg-secondary"
+              >
+                <span className="grid size-7 place-items-center rounded-md bg-primary text-primary-foreground">
+                  <User className="size-4" />
+                </span>
+                <span className="hidden text-sm font-semibold sm:inline">Profile</span>
+              </button>
             </div>
           </header>
 
@@ -261,10 +303,18 @@ const Index = () => {
                     </Marker>
                   ))}
                 </Map>
-                <div className="absolute left-4 top-4 max-w-[260px] rounded-md border border-border bg-card/95 p-3 shadow-soft backdrop-blur">
-                  <p className="text-sm font-semibold">Mumbai Needs Map</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">Active: {selectedNeed.zone}</p>
-                  <p className="text-[11px] text-muted-foreground">[{selectedNeed.coordinates.join(", ")}]</p>
+                <div className="absolute left-4 top-4 flex items-center gap-2 rounded-md border border-border bg-card/95 px-3 py-2 shadow-soft backdrop-blur">
+                  <span className="grid size-7 place-items-center rounded-md bg-primary/10 text-primary">
+                    <MapPin className="size-3.5" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold leading-tight">Live Humanitarian Heatmap</p>
+                    <p className="text-[11px] text-muted-foreground">Active: {selectedNeed.zone}</p>
+                  </div>
+                </div>
+                <div className="absolute left-1/2 top-4 flex -translate-x-1/2 items-center gap-3 rounded-full border border-border bg-card/95 px-3 py-1.5 text-[11px] shadow-soft backdrop-blur">
+                  <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-destructive" /> Critical</span>
+                  <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-accent" /> Moderate</span>
                 </div>
                 <div className="absolute right-4 top-4 flex flex-wrap gap-1 rounded-full border border-border bg-card/95 p-1 shadow-soft backdrop-blur">
                   {(Object.keys(styles) as Array<keyof typeof styles>).map((style) => (
@@ -286,7 +336,7 @@ const Index = () => {
             <section className="rounded-md border border-border bg-card p-3.5 shadow-soft">
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-sm font-semibold">Priority Feed</h2>
-                <Crosshair className="size-4 text-destructive" />
+                <AlertCircle className="size-4 text-destructive" />
               </div>
               <div className="space-y-2.5 max-h-[400px] overflow-y-auto pr-1">
                 {needs.map((need) => (
@@ -322,11 +372,18 @@ const Index = () => {
               </div>
             </section>
 
-            {/* VOLUNTEERS — vertical list, right of map */}
+            {/* SMART MATCH — AI volunteer suggestions */}
             <section className="rounded-md border border-border bg-card p-3.5 shadow-soft">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold">Volunteers Near Area</h2>
-                <Users className="size-4 text-primary" />
+                <h2 className="flex items-center gap-1.5 text-sm font-semibold">
+                  <span className="grid size-5 place-items-center rounded-md bg-primary/10 text-primary">
+                    <Sparkles className="size-3" />
+                  </span>
+                  Smart Match
+                </h2>
+                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
+                  AI Optimized
+                </span>
               </div>
               <div className="space-y-2.5 max-h-[400px] overflow-y-auto pr-1">
                 {volunteers.map((v) => (
@@ -371,48 +428,53 @@ const Index = () => {
             </section>
           </div>
 
-          {/* BOTTOM — Projects timeline + Inventory */}
-          <div className="mt-5 grid gap-4 xl:grid-cols-[3fr_1fr]">
-            <section className="rounded-md border border-border bg-card p-4 shadow-soft">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-sm font-semibold">Active Projects</h2>
-                <CalendarDays className="size-4 text-primary" />
+          {/* BOTTOM — Live Field Reports Feed */}
+          <section className="mt-5 rounded-md border border-border bg-card p-4 shadow-soft">
+            <div className="mb-4 flex items-center justify-between gap-2">
+              <h2 className="flex items-center gap-2 text-sm font-semibold">
+                <span className="grid size-6 place-items-center rounded-md bg-primary/10 text-primary">
+                  <Rss className="size-3.5" />
+                </span>
+                Live Field Reports Feed
+              </h2>
+              <div className="flex gap-1 rounded-md border border-border bg-background p-0.5 text-xs">
+                <button className="rounded-sm px-2.5 py-1 font-medium text-muted-foreground hover:bg-secondary">All Sources</button>
+                <button className="rounded-sm bg-card px-2.5 py-1 font-semibold shadow-soft">SMS Only</button>
               </div>
-              <div className="grid grid-cols-[132px_repeat(8,minmax(40px,1fr))] gap-y-3 overflow-x-auto text-xs">
-                <div />
-                {["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"].map((month) => (
-                  <div key={month} className="text-center text-[11px] font-semibold text-muted-foreground">
-                    {month}
+            </div>
+            <div className="space-y-2">
+              {fieldReports.map((r) => (
+                <article
+                  key={r.id}
+                  className="grid grid-cols-[auto_minmax(0,180px)_minmax(0,1fr)_auto] items-center gap-3 rounded-md border border-border bg-background px-3 py-2.5 transition hover:border-primary/30"
+                >
+                  <span
+                    className="grid size-9 place-items-center rounded-md"
+                    style={{ background: `hsl(var(--${r.tone}) / 0.12)`, color: `hsl(var(--${r.tone}))` }}
+                  >
+                    <r.icon className="size-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Source</p>
+                    <p className="truncate text-sm font-semibold">{r.source}</p>
                   </div>
-                ))}
-                {projects.map((project) => (
-                  <div key={project.name} className="contents">
-                    <p className="py-1.5 text-xs font-medium">{project.name}</p>
-                    <div className="col-span-8 grid grid-cols-8 items-center border-l border-border">
-                      <span className={`${project.start} ${project.span} h-2.5 rounded-full ${project.tone}`} />
-                    </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Problem Statement</p>
+                    <p className="truncate text-sm">{r.statement}</p>
                   </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-md border border-border bg-card p-4 shadow-soft">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold">Resource Inventory</h2>
-                <Package className="size-4 text-primary" />
-              </div>
-              <div className="grid gap-2.5">
-                <div className="rounded-md bg-secondary p-3">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-primary/70">Reports · Headers 600</p>
-                  <p className="mt-1 text-2xl font-semibold text-primary">$1,787</p>
-                </div>
-                <div className="rounded-md bg-muted p-3">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Accuracy Index</p>
-                  <p className="mt-1 text-2xl font-semibold">39</p>
-                </div>
-              </div>
-            </section>
-          </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white"
+                      style={{ background: `hsl(var(--${r.tone}))` }}
+                    >
+                      {r.severity}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">{r.time}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
 
           <footer className="mt-5 flex items-center justify-between">
             <Button variant="quiet" className="rounded-md">
