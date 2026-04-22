@@ -171,10 +171,17 @@ const Index = () => {
                 <Bell className="size-4" />
                 <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-destructive" />
               </button>
-              <div className="flex items-center gap-2 rounded-md border border-border bg-background p-1 pr-3">
-                <img src={aishaImg} alt="Maya Rao" className="size-7 rounded-sm object-cover" />
-                <span className="hidden text-sm font-semibold sm:inline">Maya Rao</span>
-              </div>
+              <ThemeToggle />
+              <button
+                type="button"
+                aria-label="Profile"
+                className="flex items-center gap-2 rounded-md border border-border bg-background p-1.5 pr-3 transition hover:bg-secondary"
+              >
+                <span className="grid size-7 place-items-center rounded-md bg-primary text-primary-foreground">
+                  <User className="size-4" />
+                </span>
+                <span className="hidden text-sm font-semibold sm:inline">Profile</span>
+              </button>
             </div>
           </header>
 
