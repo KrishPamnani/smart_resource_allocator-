@@ -397,48 +397,53 @@ const Index = () => {
             </section>
           </div>
 
-          {/* BOTTOM — Projects timeline + Inventory */}
-          <div className="mt-5 grid gap-4 xl:grid-cols-[3fr_1fr]">
-            <section className="rounded-md border border-border bg-card p-4 shadow-soft">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-sm font-semibold">Active Projects</h2>
-                <CalendarDays className="size-4 text-primary" />
+          {/* BOTTOM — Live Field Reports Feed */}
+          <section className="mt-5 rounded-md border border-border bg-card p-4 shadow-soft">
+            <div className="mb-4 flex items-center justify-between gap-2">
+              <h2 className="flex items-center gap-2 text-sm font-semibold">
+                <span className="grid size-6 place-items-center rounded-md bg-primary/10 text-primary">
+                  <Rss className="size-3.5" />
+                </span>
+                Live Field Reports Feed
+              </h2>
+              <div className="flex gap-1 rounded-md border border-border bg-background p-0.5 text-xs">
+                <button className="rounded-sm px-2.5 py-1 font-medium text-muted-foreground hover:bg-secondary">All Sources</button>
+                <button className="rounded-sm bg-card px-2.5 py-1 font-semibold shadow-soft">SMS Only</button>
               </div>
-              <div className="grid grid-cols-[132px_repeat(8,minmax(40px,1fr))] gap-y-3 overflow-x-auto text-xs">
-                <div />
-                {["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"].map((month) => (
-                  <div key={month} className="text-center text-[11px] font-semibold text-muted-foreground">
-                    {month}
+            </div>
+            <div className="space-y-2">
+              {fieldReports.map((r) => (
+                <article
+                  key={r.id}
+                  className="grid grid-cols-[auto_minmax(0,180px)_minmax(0,1fr)_auto] items-center gap-3 rounded-md border border-border bg-background px-3 py-2.5 transition hover:border-primary/30"
+                >
+                  <span
+                    className="grid size-9 place-items-center rounded-md"
+                    style={{ background: `hsl(var(--${r.tone}) / 0.12)`, color: `hsl(var(--${r.tone}))` }}
+                  >
+                    <r.icon className="size-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Source</p>
+                    <p className="truncate text-sm font-semibold">{r.source}</p>
                   </div>
-                ))}
-                {projects.map((project) => (
-                  <div key={project.name} className="contents">
-                    <p className="py-1.5 text-xs font-medium">{project.name}</p>
-                    <div className="col-span-8 grid grid-cols-8 items-center border-l border-border">
-                      <span className={`${project.start} ${project.span} h-2.5 rounded-full ${project.tone}`} />
-                    </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Problem Statement</p>
+                    <p className="truncate text-sm">{r.statement}</p>
                   </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-md border border-border bg-card p-4 shadow-soft">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold">Resource Inventory</h2>
-                <Package className="size-4 text-primary" />
-              </div>
-              <div className="grid gap-2.5">
-                <div className="rounded-md bg-secondary p-3">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-primary/70">Reports · Headers 600</p>
-                  <p className="mt-1 text-2xl font-semibold text-primary">$1,787</p>
-                </div>
-                <div className="rounded-md bg-muted p-3">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Accuracy Index</p>
-                  <p className="mt-1 text-2xl font-semibold">39</p>
-                </div>
-              </div>
-            </section>
-          </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white"
+                      style={{ background: `hsl(var(--${r.tone}))` }}
+                    >
+                      {r.severity}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">{r.time}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
 
           <footer className="mt-5 flex items-center justify-between">
             <Button variant="quiet" className="rounded-md">
