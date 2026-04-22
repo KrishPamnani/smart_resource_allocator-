@@ -370,63 +370,63 @@ const Index = () => {
                   </article>
                 ))}
               </div>
-            </section>
-
-            {/* SMART MATCH — AI volunteer suggestions */}
-            <section className="rounded-md border border-border bg-card p-3.5 shadow-soft">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="flex items-center gap-1.5 text-sm font-semibold">
-                  <span className="grid size-5 place-items-center rounded-md bg-primary/10 text-primary">
-                    <Sparkles className="size-3" />
-                  </span>
-                  Smart Match
-                </h2>
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
-                  AI Optimized
-                </span>
-              </div>
-              <div className="space-y-2.5 max-h-[400px] overflow-y-auto pr-1">
-                {volunteers.map((v) => (
-                  <article
-                    key={v.name}
-                    className="rounded-md border border-border bg-background p-2.5"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="relative shrink-0">
-                        <img
-                          src={v.image}
-                          alt={v.name}
-                          loading="lazy"
-                          className="size-10 rounded-full object-cover"
-                        />
-                        <span className="absolute -right-0.5 -top-0.5 grid size-4 place-items-center rounded-full bg-primary text-primary-foreground">
-                          <Check className="size-2.5" />
-                        </span>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-semibold">{v.name}</p>
-                        <p className="truncate text-[11px] text-muted-foreground">{v.occupation}</p>
-                      </div>
-                      <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">
-                        {v.match}%
-                      </span>
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-primary">
-                        {v.distance}
-                      </span>
-                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium">
-                        {v.experience}
-                      </span>
-                    </div>
-                    <Button variant="command" size="sm" className="mt-2 h-7 w-full rounded-md text-xs">
-                      Assign
-                    </Button>
-                  </article>
-                ))}
-              </div>
-            </section>
+          </section>
           </div>
+
+          {/* SMART MATCH — AI volunteer suggestions (full width, horizontal cards) */}
+          <section className="mt-5 rounded-md border border-border bg-card p-3.5 shadow-soft">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="flex items-center gap-1.5 text-sm font-semibold">
+                <span className="grid size-5 place-items-center rounded-md bg-primary/10 text-primary">
+                  <Sparkles className="size-3" />
+                </span>
+                Smart Match
+              </h2>
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
+                AI Optimized
+              </span>
+            </div>
+            <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+              {volunteers.map((v) => (
+                <article
+                  key={v.name}
+                  className="rounded-md border border-border bg-background p-2.5"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="relative shrink-0">
+                      <img
+                        src={v.image}
+                        alt={v.name}
+                        loading="lazy"
+                        className="size-10 rounded-full object-cover"
+                      />
+                      <span className="absolute -right-0.5 -top-0.5 grid size-4 place-items-center rounded-full bg-primary text-primary-foreground">
+                        <Check className="size-2.5" />
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-semibold">{v.name}</p>
+                      <p className="truncate text-[11px] text-muted-foreground">{v.occupation}</p>
+                    </div>
+                    <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">
+                      {v.match}%
+                    </span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-primary">
+                      {v.distance}
+                    </span>
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium">
+                      {v.experience}
+                    </span>
+                  </div>
+                  <Button variant="command" size="sm" className="mt-2 h-7 w-full rounded-md text-xs">
+                    Assign
+                  </Button>
+                </article>
+              ))}
+            </div>
+          </section>
 
           {/* BOTTOM — Live Field Reports Feed */}
           <section className="mt-5 rounded-md border border-border bg-card p-4 shadow-soft">
