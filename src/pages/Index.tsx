@@ -279,8 +279,8 @@ const Index = () => {
             </article>
           </div>
 
-          {/* CENTRAL ZONE — Map + Priority Feed + Volunteers (right) */}
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1fr)]">
+          {/* CENTRAL ZONE — Map + Priority Feed (side-by-side) */}
+          <div className="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
             {/* MAP — smaller */}
             <section className="overflow-hidden rounded-md border border-border bg-card shadow-soft">
               <div className="relative h-[460px] min-h-[400px]">
