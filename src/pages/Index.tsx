@@ -1,30 +1,34 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Bell,
-  CalendarDays,
   Check,
   CheckCircle2,
   ClipboardList,
-  Crosshair,
   DatabaseZap,
   FileText,
   HandHeart,
   LayoutDashboard,
   MapPin,
-  Package,
+  Radio,
   RefreshCw,
+  Rss,
   Search,
   Settings,
   ShieldCheck,
   Siren,
+  Sparkles,
+  Truck,
+  User,
   Users,
   Waves,
+  AlertCircle,
 } from "lucide-react";
 import { Marker } from "react-map-gl/maplibre";
 
 import { Button } from "@/components/ui/button";
 import { Map, type MapRef } from "@/components/ui/map";
 import Testimonials from "@/components/Testimonials";
+import ThemeToggle from "@/components/ThemeToggle";
 import aishaImg from "@/assets/volunteer-aisha.jpg";
 import danielImg from "@/assets/volunteer-daniel.jpg";
 import josephImg from "@/assets/volunteer-joseph.jpg";
