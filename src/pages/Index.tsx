@@ -341,11 +341,18 @@ const Index = () => {
               </div>
             </section>
 
-            {/* VOLUNTEERS — vertical list, right of map */}
+            {/* SMART MATCH — AI volunteer suggestions */}
             <section className="rounded-md border border-border bg-card p-3.5 shadow-soft">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold">Volunteers Near Area</h2>
-                <Users className="size-4 text-primary" />
+                <h2 className="flex items-center gap-1.5 text-sm font-semibold">
+                  <span className="grid size-5 place-items-center rounded-md bg-primary/10 text-primary">
+                    <Sparkles className="size-3" />
+                  </span>
+                  Smart Match
+                </h2>
+                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
+                  AI Optimized
+                </span>
               </div>
               <div className="space-y-2.5 max-h-[400px] overflow-y-auto pr-1">
                 {volunteers.map((v) => (
