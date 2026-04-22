@@ -69,11 +69,43 @@ const navTop = [
   { label: "Teams", icon: HandHeart },
 ];
 
-const projects = [
-  { name: "Relief kitchens", start: "col-start-1", span: "col-span-4", tone: "bg-primary" },
-  { name: "Medical tents", start: "col-start-2", span: "col-span-5", tone: "bg-accent" },
-  { name: "Water points", start: "col-start-4", span: "col-span-4", tone: "bg-primary" },
-  { name: "Shelter logistics", start: "col-start-5", span: "col-span-3", tone: "bg-accent" },
+const fieldReports = [
+  {
+    id: 1,
+    source: "SMS Gateway #421",
+    statement: "Critical water shortage in Sector 7. Immediate tanker support required for 200+ families.",
+    severity: "Critical",
+    tone: "destructive",
+    time: "2m ago",
+    icon: AlertCircle,
+  },
+  {
+    id: 2,
+    source: "Field Unit Alpha",
+    statement: "Logistics route blocked by fallen debris at Highway Intersection 4. Detour needed.",
+    severity: "Moderate",
+    tone: "accent",
+    time: "14m ago",
+    icon: Truck,
+  },
+  {
+    id: 3,
+    source: "Gov Satellite Feed",
+    statement: "Power restoration confirmed in Northeast quadrant. Communication towers active.",
+    severity: "Recovered",
+    tone: "success",
+    time: "32m ago",
+    icon: CheckCircle2,
+  },
+  {
+    id: 4,
+    source: "Paper Survey — Zone A",
+    statement: "Digitized intake: 38 households reporting medical triage needs near Cité Soleil shelter.",
+    severity: "Critical",
+    tone: "destructive",
+    time: "47m ago",
+    icon: FileText,
+  },
 ];
 
 const Index = () => {
