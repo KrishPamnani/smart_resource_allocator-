@@ -305,7 +305,7 @@ const Index = () => {
             <section className="rounded-md border border-border bg-card p-3.5 shadow-soft">
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-sm font-semibold">Priority Feed</h2>
-                <Crosshair className="size-4 text-destructive" />
+                <AlertCircle className="size-4 text-destructive" />
               </div>
               <div className="space-y-2.5 max-h-[400px] overflow-y-auto pr-1">
                 {needs.map((need) => (
