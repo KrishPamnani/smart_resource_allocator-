@@ -14,6 +14,7 @@ import VolunteerDirectory from "./pages/VolunteerDirectory";
 import Reports from "./pages/Reports";
 import NeedsHandling from "./pages/NeedsHandling";
 import Finance from "./pages/Finance";
+import Allocations from "./pages/Allocations";
 import { Teams, About, Settings } from "./pages/Placeholders";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => {
       case "Reports": return <Reports />;
       case "Needs Handling": return <NeedsHandling />;
       case "Finance": return <Finance />;
+      case "Allocations": return <Allocations />;
       case "Teams": return <Teams />;
       case "About": return <About />;
       case "Settings": return <Settings />;

@@ -11,15 +11,24 @@ import {
   Sparkles,
   Check,
   MapPin,
+  Navigation,
+  Radio,
+  Activity,
   ChevronRight,
   TrendingUp,
   BrainCircuit,
-  Zap
+  Zap,
+  Info,
+  Map as MapIcon,
+  Globe,
+  Layers
 } from "lucide-react";
 import { Marker } from "react-map-gl/maplibre";
 import { Map, type MapRef } from "@/components/ui/map";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { tacticalUnits, sosAlerts, initialVolunteers } from "@/data/mockData";
+import { addAllocation, dispatchedVolunteerIds } from "@/data/allocationState";
 
 type Need = {
   id: number;
@@ -32,7 +41,15 @@ type Need = {
   type: string;
 };
 
-const needs: Need[] = [
+const styles = {
+  default: undefined,
+  openstreetmap: "https://tiles.openfreemap.org/styles/bright",
+  openstreetmap3d: "https://tiles.openfreemap.org/styles/liberty",
+};
+
+type StyleKey = keyof typeof styles;
+
+const initialNeeds: Need[] = [
   { id: 8421, title: "Water Shortage — Ward 4", zone: "Dharavi Relief Grid", score: 9.2, reports: 257, coordinates: [72.8553, 19.038], impacted: 142, type: "Water" },
   { id: 8417, title: "Food Crisis — Transit Camp", zone: "Kurla Transit Camp", score: 9.3, reports: 209, coordinates: [72.8796, 19.0726], impacted: 118, type: "Food" },
   { id: 8398, title: "Medical Triage Needed", zone: "Sion Medical Line", score: 8.9, reports: 99, coordinates: [72.8611, 19.044], impacted: 76, type: "Healthcare" },
@@ -50,16 +67,107 @@ const stats = [
 
 const Overview = () => {
   const mapRef = useRef<MapRef>(null);
-  const [selectedNeed, setSelectedNeed] = useState(needs[0]);
+  const [currentNeeds, setCurrentNeeds] = useState(initialNeeds);
+  const [selectedNeed, setSelectedNeed] = useState(initialNeeds[0]);
   const [isSimulating, setIsSimulating] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [activeFeed, setActiveFeed] = useState<'priority' | 'sos'>('priority');
+  const [isAllocating, setIsAllocating] = useState(false);
+  const [mapStyle, setMapStyle] = useState<StyleKey>("default");
+  const aiRoutine = useRef<any>(null);
 
-  const styles = useMemo(
-    () => ({
-      openstreetmap: "https://tiles.openfreemap.org/styles/bright",
-    }),
-    [],
-  );
+  const selectedStyle = styles[mapStyle];
+  const is3D = mapStyle === "openstreetmap3d";
+
+  useEffect(() => {
+    mapRef.current?.easeTo({ pitch: is3D ? 60 : 0, duration: 500 });
+  }, [is3D]);
+
+  const executeAIAutoAllocation = (isSilent = false) => {
+    if (currentNeeds.length === 0) return;
+
+    if (!isSilent) {
+        setIsAllocating(true);
+        toast.loading("AI Command: Forcing system-wide asset scan...", { id: "ai-alloc" });
+    }
+
+    const highPriorityNeeds = [...currentNeeds].sort((a, b) => b.score - a.score);
+    
+    // Pick one high priority need at random for the auto-loop
+    const targetNeed = highPriorityNeeds[Math.floor(Math.random() * Math.min(3, highPriorityNeeds.length))];
+    
+    // FILTER: Find volunteers who ARE AVAILABLE and NOT ALREADY DISPATCHED
+    const availablePool = initialVolunteers.filter(v => 
+        v.status === "Available" && !dispatchedVolunteerIds.has(v.id)
+    );
+    
+    let candidates = [];
+    const occ = (v: any) => v.occupation.toLowerCase();
+    
+    if (targetNeed.type === "Healthcare") {
+        candidates = availablePool.filter(v => 
+            occ(v).includes("medic") || occ(v).includes("nurse") || 
+            occ(v).includes("surgeon") || occ(v).includes("doctor") || 
+            occ(v).includes("health") || occ(v).includes("psychologist")
+        );
+    } else if (targetNeed.type === "Water" || targetNeed.type === "Utilities") {
+        candidates = availablePool.filter(v => 
+            occ(v).includes("engineer") || occ(v).includes("plumber") || 
+            occ(v).includes("electrician") || occ(v).includes("water") || 
+            occ(v).includes("utility") || occ(v).includes("structural")
+        );
+    } else if (targetNeed.type === "Food" || targetNeed.type === "Logistics") {
+        candidates = availablePool.filter(v => 
+            occ(v).includes("logistics") || occ(v).includes("logistician") || 
+            occ(v).includes("pilot") || occ(v).includes("ops") || 
+            occ(v).includes("coordinator") || occ(v).includes("search") ||
+            occ(v).includes("rescue") || occ(v).includes("nutrition")
+        );
+    }
+
+    // Pick a random candidate from the matched pool for variety
+    const match = candidates[Math.floor(Math.random() * candidates.length)];
+
+    if (match) {
+        // REMOVE FROM LIST (Issue Resolution)
+        setCurrentNeeds(prev => prev.filter(n => n.id !== targetNeed.id));
+
+        addAllocation({
+            id: Date.now(),
+            volunteer: match,
+            zone: targetNeed.zone,
+            task: targetNeed.title,
+            startTime: "Just now",
+            status: "En-route",
+            priority: targetNeed.score > 9 ? "Critical" : "High"
+        });
+
+        toast.success(`AI Auto-Dispatch: ${match.name} assigned to ${targetNeed.zone}`, {
+            description: `Personnel ID: HR-${match.id} | Issue Resolved in Queue.`,
+            icon: <Zap className="size-4 text-orange-500" />
+        });
+    }
+
+    if (!isSilent) {
+        setTimeout(() => {
+            setIsAllocating(false);
+            toast.success("Forced Allocation Sweep Complete.", { id: "ai-alloc" });
+        }, 1500);
+    }
+  };
+
+  aiRoutine.current = executeAIAutoAllocation;
+
+  useEffect(() => {
+    // Auto-allocation "Forever" loop (every 5 seconds for visibility)
+    const interval = setInterval(() => {
+        if (aiRoutine.current) {
+            aiRoutine.current(true);
+        }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
 
   useEffect(() => {
     mapRef.current?.easeTo({ center: selectedNeed.coordinates, zoom: 12.5, duration: 800 });
@@ -105,9 +213,18 @@ const Overview = () => {
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Operational Overview</h1>
           <p className="text-muted-foreground text-sm mt-1">Real-time status of disaster response efforts across all sectors.</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="rounded-full" onClick={handleExportCSV}>Export CSV</Button>
-          <Button className="rounded-full bg-[#2D6A4F] text-white hover:bg-[#1B4332]" onClick={() => toast.info("Comprehensive activity logs are synced every 30s.")}>View All Logs</Button>
+        <div className="flex gap-2 items-center">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="rounded-full border-[#2D6A4F] text-[#2D6A4F] hover:bg-[#2D6A4F]/10 flex items-center gap-2 h-9 px-4 font-bold"
+            onClick={() => executeAIAutoAllocation(false)}
+          >
+            <BrainCircuit className="size-3.5" />
+            Initiate AI Dispatch
+          </Button>
+          <Button variant="outline" className="rounded-full h-9 px-5" onClick={handleExportCSV}>Export CSV</Button>
+          <Button className="rounded-full h-9 px-5 bg-[#2D6A4F] text-white hover:bg-[#1B4332]" onClick={() => toast.info("Comprehensive activity logs are synced every 30s.")}>View All Logs</Button>
         </div>
       </div>
 
@@ -134,14 +251,46 @@ const Overview = () => {
       </div>
 
       {/* MAP SECTION */}
+      <div className="flex items-center gap-2 mb-3">
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mr-2">Tactical Map Layers:</p>
+        <Button 
+          variant={mapStyle === 'default' ? 'default' : 'outline'} 
+          size="sm" 
+          className={`h-8 rounded-xl text-[10px] font-bold gap-2 transition-all ${mapStyle === 'default' ? 'bg-[#2D6A4F] hover:bg-[#1B4332]' : ''}`}
+          onClick={() => setMapStyle('default')}
+        >
+          <MapIcon className="size-3" />
+          Carto High-Contrast
+        </Button>
+        <Button 
+          variant={mapStyle === 'openstreetmap' ? 'default' : 'outline'} 
+          size="sm" 
+          className={`h-8 rounded-xl text-[10px] font-bold gap-2 transition-all ${mapStyle === 'openstreetmap' ? 'bg-[#2D6A4F] hover:bg-[#1B4332]' : ''}`}
+          onClick={() => setMapStyle('openstreetmap')}
+        >
+          <Globe className="size-3" />
+          OSM Standard
+        </Button>
+        <Button 
+          variant={mapStyle === 'openstreetmap3d' ? 'default' : 'outline'} 
+          size="sm" 
+          className={`h-8 rounded-xl text-[10px] font-bold gap-2 transition-all ${mapStyle === 'openstreetmap3d' ? 'bg-[#2D6A4F] hover:bg-[#1B4332]' : ''}`}
+          onClick={() => setMapStyle('openstreetmap3d')}
+        >
+          <Layers className="size-3" />
+          3D Perspective
+        </Button>
+      </div>
+
       <section className="relative h-[480px] w-full rounded-[2rem] border border-border/50 bg-card shadow-soft overflow-hidden">
         <Map
           ref={mapRef}
-          mapStyle={styles.openstreetmap}
+          mapStyle={selectedStyle ? selectedStyle : undefined}
           initialViewState={{ longitude: 72.8656, latitude: 19.0607, zoom: 11 }}
           className="h-full w-full"
         >
-          {needs.map((need) => (
+          {/* NEEDS MARKERS */}
+          {currentNeeds.map((need) => (
             <Marker key={need.id} longitude={need.coordinates[0]} latitude={need.coordinates[1]} anchor="bottom">
               <button onClick={() => setSelectedNeed(need)} className="group relative flex flex-col items-center">
                 <div className="mb-1 rounded-full bg-[#2D6A4F] px-2 py-0.5 text-[10px] font-bold text-white shadow-lg border border-white/20 flex items-center gap-1">
@@ -149,72 +298,111 @@ const Overview = () => {
                   {need.reports} Reports
                 </div>
                 <span className={`relative grid size-10 place-items-center rounded-full text-white shadow-lg transition-all duration-300 group-hover:-translate-y-2 group-hover:scale-110 ${selectedNeed.id === need.id ? 'bg-destructive' : 'bg-destructive/80'}`}>
-                  <span className={`absolute inset-0 rounded-full bg-destructive/40 motion-safe-only animate-ping ${selectedNeed.id === need.id ? 'opacity-100' : 'opacity-0'}`} />
+                  <span className={`absolute inset-0 rounded-full bg-destructive/40 motion-safe-only animate-ping ${selectedNeed.id === need.id || need.score > 9 ? 'opacity-100' : 'opacity-0'}`} />
                   <MapPin className="relative size-5 fill-current" />
                 </span>
               </button>
             </Marker>
           ))}
+
+          {/* TACTICAL UNIT MARKERS */}
+          {tacticalUnits.map((unit) => (
+            <Marker key={unit.id} longitude={unit.coordinates[0]} latitude={unit.coordinates[1]} anchor="center">
+              <div className="group relative flex flex-col items-center cursor-help">
+                <div className="absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-blue-600 text-white text-[9px] font-black px-2 py-0.5 rounded-md shadow-xl uppercase tracking-tighter">
+                    {unit.name} • {unit.status}
+                </div>
+                <div className="size-8 rounded-xl bg-blue-600 text-white shadow-lg flex items-center justify-center border-2 border-white/40 animate-in zoom-in-50 duration-500">
+                    <Navigation className={`size-4 ${unit.status === 'Moving' ? 'animate-bounce' : ''}`} />
+                    <span className="absolute -top-1 -right-1 size-3 rounded-full bg-green-500 border-2 border-white" />
+                </div>
+              </div>
+            </Marker>
+          ))}
         </Map>
 
-        {/* LEFT FLOATING PANELS */}
-        <div className="absolute left-6 top-6 w-64 flex flex-col gap-3 pointer-events-none">
-            <div className="pointer-events-auto flex items-center gap-3 rounded-xl border border-border/40 bg-card/90 p-3 shadow-xl backdrop-blur-md">
-                <div className="grid size-9 place-items-center rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F]">
-                    <MapPin className="size-4" />
+        {/* LEFT FLOATING PANEL - STRATEGIC FOCUS */}
+        <div className="absolute left-6 top-6 w-56 pointer-events-none">
+            <div className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-border/40 bg-card/60 p-4 shadow-xl backdrop-blur-md">
+                <div className="grid size-10 place-items-center rounded-xl bg-[#2D6A4F]/10 text-[#2D6A4F]">
+                    <MapPin className="size-5" />
                 </div>
                 <div>
-                    <p className="text-[10px] font-bold text-foreground">Focusing Zone</p>
-                    <p className="text-[10px] text-muted-foreground">{selectedNeed.zone}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-foreground/60">Strategic Focus</p>
+                    <p className="text-xs font-bold text-foreground truncate max-w-[130px]">{selectedNeed.zone}</p>
                 </div>
-            </div>
-
-            <div className="pointer-events-auto space-y-3 rounded-xl border border-border/40 bg-card/90 p-4 shadow-xl backdrop-blur-md">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">Active Need</h2>
-                    <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[8px] font-bold text-destructive border border-destructive/20 uppercase">Urgency: {selectedNeed.score}</span>
-                </div>
-                <h3 className="text-sm font-bold text-foreground leading-tight">{selectedNeed.title}</h3>
-                <div className="flex items-center justify-between text-[9px] text-muted-foreground">
-                    <span>{selectedNeed.impacted}+ impacted residents</span>
-                    <span className="font-bold text-[#2D6A4F] uppercase tracking-tighter">{selectedNeed.type}</span>
-                </div>
-                <Button className="w-full h-9 bg-[#2D6A4F] text-white rounded-lg text-[10px] font-bold shadow-lg shadow-[#2D6A4F]/20 hover:bg-[#1B4332] transition-all" onClick={() => toast.promise(new Promise(r => setTimeout(r, 1500)), { loading: 'Initializing deployment protocol...', success: 'Response team dispatched to focus zone.', error: 'Deployment failed.' })}>
-                    Assign Response Team
-                </Button>
             </div>
         </div>
 
-        {/* RIGHT FLOATING PANEL */}
-        <div className="absolute right-6 top-6 w-64 h-[calc(100%-48px)] pointer-events-none">
-            <div className="pointer-events-auto h-full p-2 flex flex-col bg-transparent">
-                <div className="flex items-center gap-2 mb-4 px-2">
-                    <AlertCircle className="size-3 text-destructive" />
-                    <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">High Priority Feed</h2>
-                </div>
-                
-                <div className="flex-1 space-y-2.5 overflow-y-auto pr-2 custom-scrollbar">
-                    {needs.map((need) => (
+        {/* RIGHT FLOATING PANEL - CONSOLIDATED FEEDS */}
+        <div className="absolute right-6 top-6 w-64 max-h-[380px] flex flex-col pointer-events-none">
+            <div className="pointer-events-auto flex flex-col h-full rounded-[2rem] border border-border/20 bg-white/5 dark:bg-black/5 backdrop-blur-[4px] shadow-2xl overflow-hidden">
+                <div className="p-1 bg-white/10 dark:bg-black/20 border-b border-border/10">
+                    <div className="grid grid-cols-2 gap-1">
                         <button 
-                            key={need.id}
-                            onClick={() => setSelectedNeed(need)}
-                            className={`w-full text-left p-4 rounded-xl border transition-all ${
-                                selectedNeed.id === need.id 
-                                ? 'border-[#2D6A4F] bg-white dark:bg-zinc-900 shadow-lg scale-[1.02]' 
-                                : 'border-border/40 bg-white/90 dark:bg-zinc-900/90 hover:border-[#2D6A4F]/40'
+                            onClick={() => setActiveFeed('priority')}
+                            className={`px-3 py-2 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                                activeFeed === 'priority' ? 'bg-[#2D6A4F] text-white shadow-lg' : 'text-foreground/60 hover:bg-white/10'
                             }`}
                         >
-                            <div className="flex items-start justify-between mb-1.5">
-                                <p className="text-xs font-bold text-foreground leading-tight line-clamp-2">{need.title}</p>
-                                <span className={`text-[10px] font-bold text-destructive`}>{need.score}</span>
-                            </div>
-                            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-medium">
-                                <span>{need.reports} Reports</span>
-                                <ChevronRight className={`size-3 transition-transform ${selectedNeed.id === need.id ? 'translate-x-1' : ''}`} />
-                            </div>
+                            Priorities
                         </button>
-                    ))}
-                    <div className="h-4 w-full" />
+                        <button 
+                            onClick={() => setActiveFeed('sos')}
+                            className={`px-3 py-2 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                                activeFeed === 'sos' ? 'bg-destructive text-white shadow-lg' : 'text-foreground/60 hover:bg-white/10'
+                            }`}
+                        >
+                            SOS Feed
+                        </button>
+                    </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                    {activeFeed === 'priority' ? (
+                        currentNeeds.map((need) => (
+                            <button 
+                                key={need.id}
+                                onClick={() => setSelectedNeed(need)}
+                                className={`w-full text-left p-3.5 rounded-2xl border transition-all duration-300 shadow-sm ${
+                                    selectedNeed.id === need.id 
+                                    ? 'border-[#2D6A4F] bg-card/80 dark:bg-zinc-800/80 backdrop-blur-md scale-[1.02]' 
+                                    : 'border-border/10 bg-white/10 dark:bg-black/20 hover:bg-white/20 dark:hover:bg-black/40'
+                                }`}
+                            >
+                                <div className="flex items-start justify-between mb-2">
+                                    <p className="text-[11px] font-black text-foreground leading-tight line-clamp-1 drop-shadow-sm">{need.title}</p>
+                                    <span className="text-[10px] font-black text-destructive drop-shadow-sm">
+                                        {need.score}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5 text-[10px] font-black text-foreground/70 drop-shadow-sm">
+                                        <Rss className="size-2.5 text-[#2D6A4F]" />
+                                        {need.reports}
+                                    </div>
+                                    <ChevronRight className={`size-2.5 transition-transform text-foreground/50 ${selectedNeed.id === need.id ? 'translate-x-1 text-[#2D6A4F]' : ''}`} />
+                                </div>
+                            </button>
+                        ))
+                    ) : (
+                        sosAlerts.map((alert) => (
+                            <div key={alert.id} className="p-3.5 rounded-2xl border border-border/10 bg-white/10 dark:bg-black/20 hover:bg-white/20 dark:hover:bg-black/40 transition-colors group cursor-default">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded shadow-sm ${
+                                        alert.severity === 'Critical' ? 'bg-destructive text-white' : 'bg-orange-500 text-white'
+                                    }`}>
+                                        {alert.severity}
+                                    </span>
+                                    <span className="text-[8px] text-foreground/60 font-black drop-shadow-sm">{alert.time}</span>
+                                </div>
+                                <p className="text-[10px] font-bold text-foreground leading-snug line-clamp-2 group-hover:line-clamp-none transition-all drop-shadow-sm">{alert.message}</p>
+                                <div className="mt-2 flex items-center gap-2 text-[8px] text-foreground/50 uppercase font-black tracking-tighter">
+                                    <Activity className="size-2.5 text-destructive" /> {alert.source}
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>
@@ -314,14 +502,35 @@ const Overview = () => {
                         </div>
                     </div>
                     
-                    <div className="mt-6 pt-6 border-t border-border/40 flex items-center justify-between">
-                        <div>
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Model Confidence</p>
-                            <p className="text-lg font-extrabold text-[#2D6A4F]">98.4%</p>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Latency</p>
-                            <p className="text-lg font-extrabold text-foreground">14ms</p>
+                    <div className="mt-8 pt-8 border-t border-border/40 flex flex-col gap-4">
+                        <Button 
+                            className="w-full h-14 rounded-2xl bg-[#2D6A4F] text-white hover:bg-[#1B4332] font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-[#2D6A4F]/30 flex items-center justify-center gap-3 transition-all active:scale-95 group relative overflow-hidden"
+                            onClick={() => executeAIAutoAllocation(false)}
+                            disabled={isAllocating}
+                        >
+                            {isAllocating ? (
+                                <>
+                                    <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                                    <Sparkles className="size-4 animate-spin" />
+                                    Synthesizing Deployment Vectors...
+                                </>
+                            ) : (
+                                <>
+                                    <BrainCircuit className="size-5 group-hover:rotate-12 transition-transform" />
+                                    AI Command: Auto-Allocate Field Assets
+                                    <Zap className="size-4 text-orange-400 fill-orange-400" />
+                                </>
+                            )}
+                        </Button>
+                        <div className="flex items-center justify-between px-2">
+                            <div>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Model Precision</p>
+                                <p className="text-lg font-extrabold text-[#2D6A4F]">98.4%</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Decision Latency</p>
+                                <p className="text-lg font-extrabold text-foreground">14ms</p>
+                            </div>
                         </div>
                     </div>
                 </div>

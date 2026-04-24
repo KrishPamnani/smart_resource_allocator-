@@ -47,7 +47,7 @@ const VolunteerDirectory = () => {
         distance: "0.0 km",
         status: "Available" as const,
         match: 100,
-        image: aishaImg, // Default image for demo
+        image: volunteers[0]?.image, // Use an existing image or fallback
     };
 
     setVolunteers([newVolunteer, ...volunteers]);
@@ -206,11 +206,15 @@ const VolunteerDirectory = () => {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="icon" className="size-8 rounded-full hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F]" onClick={() => toast.success(`Drafting email to ${v.name}...`)}>
-                            <Mail className="size-4" />
+                        <Button asChild variant="ghost" size="icon" className="size-8 rounded-full hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F]" onClick={() => toast.success(`Drafting email to ${v.name}...`)}>
+                            <a href={`mailto:${v.email}`}>
+                                <Mail className="size-4" />
+                            </a>
                         </Button>
-                        <Button variant="ghost" size="icon" className="size-8 rounded-full hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F]" onClick={() => toast.info(`Initializing secure call line to ${v.phone}...`)}>
-                            <Phone className="size-4" />
+                        <Button asChild variant="ghost" size="icon" className="size-8 rounded-full hover:bg-[#2D6A4F]/10 hover:text-[#2D6A4F]" onClick={() => toast.info(`Initializing secure call line to ${v.phone}...`)}>
+                            <a href={`tel:${v.phone}`}>
+                                <Phone className="size-4" />
+                            </a>
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

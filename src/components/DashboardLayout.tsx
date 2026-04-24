@@ -12,6 +12,7 @@ import {
   HandHeart,
   Settings,
   LogOut,
+  UserCheck
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import { toast } from "sonner";
@@ -22,6 +23,7 @@ export type TabId =
   | "Reports" 
   | "Needs Handling" 
   | "Finance" 
+  | "Allocations"
   | "Teams" 
   | "About" 
   | "Settings";
@@ -37,6 +39,7 @@ const navTop: NavItem[] = [
   { label: "Reports", icon: FileText },
   { label: "Needs Handling", icon: ClipboardList },
   { label: "Finance", icon: DatabaseZap },
+  { label: "Allocations", icon: UserCheck },
   { label: "Teams", icon: HandHeart },
 ];
 
