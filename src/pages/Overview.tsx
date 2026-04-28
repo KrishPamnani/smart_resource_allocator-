@@ -42,7 +42,7 @@ type Need = {
 };
 
 const styles = {
-  default: undefined,
+  default: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
   openstreetmap: "https://tiles.openfreemap.org/styles/bright",
   openstreetmap3d: "https://tiles.openfreemap.org/styles/liberty",
 };
@@ -83,12 +83,78 @@ const Overview = () => {
     mapRef.current?.easeTo({ pitch: is3D ? 60 : 0, duration: 500 });
   }, [is3D]);
 
-  const executeAIAutoAllocation = (isSilent = false) => {
+  useEffect(() => {
+    const fetchNeeds = async () => {
+      try {
+        const res = await fetch('http://localhost:3000/api/crises');
+        if (res.ok) {
+          const data = await res.json();
+          const validData = data.filter((n: any) => n.coordinates && Array.isArray(n.coordinates) && n.coordinates.length === 2);
+          if (validData && validData.length > 0) {
+            setCurrentNeeds(validData);
+            // Update selectedNeed if it doesn't exist in the fetched list
+            setSelectedNeed((prev) => {
+                if (!prev || !validData.find((n: Need) => n.id === prev.id)) return validData[0];
+                return prev;
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch crises", err);
+      }
+    };
+    fetchNeeds();
+    const interval = setInterval(fetchNeeds, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleResolveNeed = async (id: number | string) => {
+    setCurrentNeeds(prev => prev.filter(n => n.id !== id));
+    try {
+        const res = await fetch(`http://localhost:3000/api/crises/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            toast.success("Location cleared successfully.");
+        } else {
+            throw new Error("Failed to clear.");
+        }
+    } catch (e) {
+        toast.error("Failed to clear location on backend.");
+    }
+  };
+
+  const executeAIAutoAllocation = async (isSilent = false) => {
     if (currentNeeds.length === 0) return;
 
     if (!isSilent) {
         setIsAllocating(true);
-        toast.loading("AI Command: Forcing system-wide asset scan...", { id: "ai-alloc" });
+        toast.loading("AI Command: Connecting to backend for system-wide asset scan...", { id: "ai-alloc" });
+    }
+
+    try {
+        // Try to call the actual backend we just built!
+        const response = await fetch('http://localhost:3000/api/admin/trigger-auto-dispatch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Backend not available or failed');
+        }
+
+        const data = await response.json();
+        
+        if (!isSilent) {
+            toast.success("Backend Auto-Dispatch Complete.", { id: "ai-alloc" });
+        }
+        
+        // Note: Real-time updates would come via onSnapshot listener from firebase here.
+        // For the sake of the demo maintaining its local state, we will STILL run the local 
+        // simulation below just to keep the UI visually updating if they haven't set up Firebase yet.
+
+    } catch (error) {
+        if (!isSilent) {
+            toast.error("Backend unreachable. Falling back to local simulation logic...", { id: "ai-alloc-err" });
+        }
     }
 
     const highPriorityNeeds = [...currentNeeds].sort((a, b) => b.score - a.score);
@@ -129,8 +195,7 @@ const Overview = () => {
     const match = candidates[Math.floor(Math.random() * candidates.length)];
 
     if (match) {
-        // REMOVE FROM LIST (Issue Resolution)
-        setCurrentNeeds(prev => prev.filter(n => n.id !== targetNeed.id));
+        // AI allocation no longer auto-clears the map marker
 
         addAllocation({
             id: Date.now(),
@@ -170,7 +235,9 @@ const Overview = () => {
 
 
   useEffect(() => {
-    mapRef.current?.easeTo({ center: selectedNeed.coordinates, zoom: 12.5, duration: 800 });
+    if (selectedNeed && selectedNeed.coordinates) {
+        mapRef.current?.easeTo({ center: selectedNeed.coordinates, zoom: 12.5, duration: 800 });
+    }
   }, [selectedNeed]);
 
   const handleExportCSV = () => {
@@ -323,21 +390,32 @@ const Overview = () => {
 
         {/* LEFT FLOATING PANEL - STRATEGIC FOCUS */}
         <div className="absolute left-6 top-6 w-56 pointer-events-none">
-            <div className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-border/40 bg-card/60 p-4 shadow-xl backdrop-blur-md">
+            <div className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-border/40 bg-background/60 p-4 shadow-2xl backdrop-blur-xl">
                 <div className="grid size-10 place-items-center rounded-xl bg-[#2D6A4F]/10 text-[#2D6A4F]">
                     <MapPin className="size-5" />
                 </div>
-                <div>
+                <div className="flex-1">
                     <p className="text-[10px] font-black uppercase tracking-widest text-foreground/60">Strategic Focus</p>
-                    <p className="text-xs font-bold text-foreground truncate max-w-[130px]">{selectedNeed.zone}</p>
+                    <p className="text-xs font-bold text-foreground truncate max-w-[130px]">{selectedNeed?.zone || "None"}</p>
                 </div>
+                {selectedNeed && (
+                    <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="size-8 rounded-full text-green-500 hover:bg-green-500/20 hover:text-green-600 ml-auto"
+                        onClick={() => handleResolveNeed(selectedNeed.id)}
+                        title="Mark as resolved"
+                    >
+                        <Check className="size-4" />
+                    </Button>
+                )}
             </div>
         </div>
 
         {/* RIGHT FLOATING PANEL - CONSOLIDATED FEEDS */}
         <div className="absolute right-6 top-6 w-64 max-h-[380px] flex flex-col pointer-events-none">
-            <div className="pointer-events-auto flex flex-col h-full rounded-[2rem] border border-border/20 bg-white/5 dark:bg-black/5 backdrop-blur-[4px] shadow-2xl overflow-hidden">
-                <div className="p-1 bg-white/10 dark:bg-black/20 border-b border-border/10">
+            <div className="pointer-events-auto flex flex-col h-full rounded-[2rem] border border-border/40 bg-background/60 backdrop-blur-xl shadow-2xl overflow-hidden">
+                <div className="p-1 bg-muted/50 border-b border-border/40">
                     <div className="grid grid-cols-2 gap-1">
                         <button 
                             onClick={() => setActiveFeed('priority')}
@@ -350,7 +428,7 @@ const Overview = () => {
                         <button 
                             onClick={() => setActiveFeed('sos')}
                             className={`px-3 py-2 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${
-                                activeFeed === 'sos' ? 'bg-destructive text-white shadow-lg' : 'text-foreground/60 hover:bg-white/10'
+                                activeFeed === 'sos' ? 'bg-destructive text-white shadow-lg' : 'text-foreground/60 hover:bg-muted'
                             }`}
                         >
                             SOS Feed
@@ -366,15 +444,27 @@ const Overview = () => {
                                 onClick={() => setSelectedNeed(need)}
                                 className={`w-full text-left p-3.5 rounded-2xl border transition-all duration-300 shadow-sm ${
                                     selectedNeed.id === need.id 
-                                    ? 'border-[#2D6A4F] bg-card/80 dark:bg-zinc-800/80 backdrop-blur-md scale-[1.02]' 
-                                    : 'border-border/10 bg-white/10 dark:bg-black/20 hover:bg-white/20 dark:hover:bg-black/40'
+                                    ? 'border-[#2D6A4F] bg-accent/60 backdrop-blur-md scale-[1.02]' 
+                                    : 'border-border/40 bg-background/40 hover:bg-accent/60'
                                 }`}
                             >
                                 <div className="flex items-start justify-between mb-2">
                                     <p className="text-[11px] font-black text-foreground leading-tight line-clamp-1 drop-shadow-sm">{need.title}</p>
-                                    <span className="text-[10px] font-black text-destructive drop-shadow-sm">
-                                        {need.score}
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-black text-destructive drop-shadow-sm">
+                                            {need.score}
+                                        </span>
+                                        <div 
+                                          className="grid size-5 place-items-center rounded-full bg-green-500/10 hover:bg-green-500/30 text-green-500 transition-colors z-10"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleResolveNeed(need.id);
+                                          }}
+                                          title="Mark as resolved"
+                                        >
+                                          <Check className="size-3" />
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5 text-[10px] font-black text-foreground/70 drop-shadow-sm">
@@ -387,7 +477,7 @@ const Overview = () => {
                         ))
                     ) : (
                         sosAlerts.map((alert) => (
-                            <div key={alert.id} className="p-3.5 rounded-2xl border border-border/10 bg-white/10 dark:bg-black/20 hover:bg-white/20 dark:hover:bg-black/40 transition-colors group cursor-default">
+                            <div key={alert.id} className="p-3.5 rounded-2xl border border-border/40 bg-background/40 hover:bg-accent/60 transition-colors group cursor-default">
                                 <div className="flex items-center justify-between mb-2">
                                     <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded shadow-sm ${
                                         alert.severity === 'Critical' ? 'bg-destructive text-white' : 'bg-orange-500 text-white'

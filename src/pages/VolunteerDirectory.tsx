@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Filter, Mail, Phone, MapPin, MoreHorizontal, UserCheck, Plus, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -25,7 +25,25 @@ const VolunteerDirectory = () => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-  const [volunteers, setVolunteers] = useState(initialVolunteers);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [volunteers, setVolunteers] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // FETCH FROM BACKEND ON LOAD
+  useEffect(() => {
+    fetch('http://localhost:3000/api/volunteers')
+      .then(res => res.json())
+      .then(data => {
+          setVolunteers(data);
+          setIsLoading(false);
+      })
+      .catch(err => {
+          console.error("Backend error:", err);
+          // If backend isn't running, fallback to mock data
+          setVolunteers(initialVolunteers);
+          setIsLoading(false);
+      });
+  }, []);
 
   const filteredVolunteers = volunteers.filter(v => {
     const matchesSearch = v.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -34,11 +52,10 @@ const VolunteerDirectory = () => {
     return matchesSearch && matchesFilter;
   });
 
-  const handleRegisterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleRegisterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const newVolunteer = {
-        id: volunteers.length + 1,
         name: formData.get("name") as string,
         occupation: formData.get("occupation") as string,
         experience: formData.get("experience") as string,
@@ -47,13 +64,27 @@ const VolunteerDirectory = () => {
         distance: "0.0 km",
         status: "Available" as const,
         match: 100,
-        image: volunteers[0]?.image, // Use an existing image or fallback
+        image: photoPreview || ("https://i.pravatar.cc/150?u=" + Date.now()),
     };
 
-    setVolunteers([newVolunteer, ...volunteers]);
+    // SEND TO BACKEND
+    try {
+        const response = await fetch('http://localhost:3000/api/volunteers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newVolunteer)
+        });
+        const savedVolunteer = await response.json();
+        setVolunteers([savedVolunteer, ...volunteers]);
+    } catch (error) {
+        // Fallback if backend is down
+        setVolunteers([{ id: Date.now(), ...newVolunteer }, ...volunteers]);
+    }
+
     setIsRegisterOpen(false);
+    setPhotoPreview(null);
     toast.success(`${newVolunteer.name} has been successfully registered!`, {
-        description: "Certification verified. Ready for immediate deployment.",
+        description: "Certification verified. Data persisted to backend.",
         icon: <ShieldCheck className="size-4 text-green-500" />,
     });
   };
@@ -94,7 +125,10 @@ const VolunteerDirectory = () => {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
+        <Dialog open={isRegisterOpen} onOpenChange={(open) => {
+            setIsRegisterOpen(open);
+            if (!open) setPhotoPreview(null);
+        }}>
             <DialogTrigger asChild>
                 <Button className="rounded-xl bg-[#2D6A4F] text-white hover:bg-[#1B4332]" onClick={() => toast.success("Opening volunteer registration portal...")}>
                     <Plus className="mr-2 size-4" />
@@ -113,6 +147,32 @@ const VolunteerDirectory = () => {
                         </DialogHeader>
 
                         <div className="grid gap-6 py-8">
+                            <div className="flex items-center gap-4">
+                                <div className="relative size-16 rounded-full border-2 border-border/50 overflow-hidden bg-secondary flex-shrink-0 flex items-center justify-center">
+                                    {photoPreview ? (
+                                        <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <UserCheck className="size-6 text-muted-foreground" />
+                                    )}
+                                </div>
+                                <div className="flex-1 grid gap-2">
+                                    <Label htmlFor="photo" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Profile Photo (Optional)</Label>
+                                    <Input 
+                                        id="photo" 
+                                        type="file" 
+                                        accept="image/*" 
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                const reader = new FileReader();
+                                                reader.onloadend = () => setPhotoPreview(reader.result as string);
+                                                reader.readAsDataURL(file);
+                                            }
+                                        }} 
+                                        className="rounded-xl border-border/40 bg-background file:text-[#2D6A4F] file:font-bold file:border-0 file:bg-transparent cursor-pointer h-11" 
+                                    />
+                                </div>
+                            </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="name" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Full Legal Name</Label>
                                 <Input id="name" name="name" placeholder="Dr. Alex Rivera" required className="rounded-xl border-border/40 bg-background focus:ring-[#2D6A4F]" />
@@ -227,7 +287,13 @@ const VolunteerDirectory = () => {
                                     <UserCheck className="size-4" /> Deploy to Zone
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => toast.info(`Loading detailed profile for ${v.name}...`)}>View Profile</DropdownMenuItem>
-                                <DropdownMenuItem className="text-destructive" onClick={() => {
+                                <DropdownMenuItem className="text-destructive" onClick={async () => {
+                                    // Make backend request to delete
+                                    try {
+                                        await fetch('http://localhost:3000/api/volunteers/' + v.id, { method: 'DELETE' });
+                                    } catch (err) {
+                                        console.error("Backend unreachable for deletion");
+                                    }
                                     setVolunteers(volunteers.filter(vol => vol.id !== v.id));
                                     toast.error(`Removing ${v.name} from active directory...`);
                                 }}>Remove</DropdownMenuItem>

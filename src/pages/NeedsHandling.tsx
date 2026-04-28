@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus, MoreHorizontal, Clock, MapPin, AlertTriangle, ArrowRight, CheckCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, MoreHorizontal, Clock, MapPin, ArrowRight, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { 
@@ -30,28 +30,67 @@ const initialTasks = [
 ];
 
 const NeedsHandling = () => {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState<any[]>([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newTask, setNewTask] = useState({ title: "", zone: "", priority: "Medium" });
 
-  const moveTask = (id: number, newStatus: string) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
-    toast.success(`Task moved to ${newStatus}`);
+  const loadTasks = async () => {
+    try {
+      const res = await fetch('http://localhost:3000/api/tasks');
+      const data = await res.json();
+      // Map 'stage' from backend to 'status' for frontend backwards compatibility
+      setTasks(data.map((t: any) => ({ ...t, status: t.stage || 'Unassigned', time: "Just now" })));
+    } catch (e) {
+      console.error(e);
+      setTasks(initialTasks); // Fallback
+    }
   };
 
-  const handleCreateTask = () => {
+  useEffect(() => {
+    loadTasks();
+    const interval = setInterval(loadTasks, 5000); // Poll for real-time feel
+    return () => clearInterval(interval);
+  }, []);
+
+  const moveTask = async (id: string | number, newStatus: string) => {
+    // Optimistic UI update
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
+    try {
+      await fetch(`http://localhost:3000/api/tasks/${id}/stage`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: newStatus })
+      });
+      toast.success(`Task moved to ${newStatus}`);
+    } catch (e) {
+      toast.error("Failed to sync move with backend");
+    }
+  };
+
+  const handleCreateTask = async () => {
     if (!newTask.title || !newTask.zone) {
         toast.error("Please fill all fields.");
         return;
     }
-    const task = {
+    const taskData = {
         ...newTask,
-        id: Date.now(),
-        status: "Unassigned",
-        time: "Just now"
+        stage: "Unassigned",
+        requiredSkills: []
     };
-    setTasks(prev => [task, ...prev]);
-    toast.success("New task initialized in command queue.");
+    
+    try {
+        const res = await fetch('http://localhost:3000/api/tasks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(taskData)
+        });
+        const savedTask = await res.json();
+        setTasks(prev => [{...savedTask, status: savedTask.stage, time: "Just now"}, ...prev]);
+        toast.success("New task initialized in command queue.");
+    } catch (e) {
+        toast.error("Failed to create task on backend.");
+    }
+    
     setIsCreateOpen(false);
     setNewTask({ title: "", zone: "", priority: "Medium" });
   };
