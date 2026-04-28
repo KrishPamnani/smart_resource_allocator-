@@ -31,7 +31,7 @@ const VolunteerDirectory = () => {
 
   // FETCH FROM BACKEND ON LOAD
   useEffect(() => {
-    fetch('http://localhost:3000/api/volunteers')
+    fetch('/api/volunteers')
       .then(res => res.json())
       .then(data => {
           setVolunteers(data);
@@ -69,7 +69,7 @@ const VolunteerDirectory = () => {
 
     // SEND TO BACKEND
     try {
-        const response = await fetch('http://localhost:3000/api/volunteers', {
+        const response = await fetch('/api/volunteers', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newVolunteer)
@@ -290,7 +290,7 @@ const VolunteerDirectory = () => {
                                 <DropdownMenuItem className="text-destructive" onClick={async () => {
                                     // Make backend request to delete
                                     try {
-                                        await fetch('http://localhost:3000/api/volunteers/' + v.id, { method: 'DELETE' });
+                                        await fetch(`/api/volunteers/${v.id}`, { method: 'DELETE' });
                                     } catch (err) {
                                         console.error("Backend unreachable for deletion");
                                     }

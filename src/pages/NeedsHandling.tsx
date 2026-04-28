@@ -36,7 +36,7 @@ const NeedsHandling = () => {
 
   const loadTasks = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/tasks');
+      const res = await fetch('/api/tasks');
       const data = await res.json();
       // Map 'stage' from backend to 'status' for frontend backwards compatibility
       setTasks(data.map((t: any) => ({ ...t, status: t.stage || 'Unassigned', time: "Just now" })));
@@ -56,7 +56,7 @@ const NeedsHandling = () => {
     // Optimistic UI update
     setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
     try {
-      await fetch(`http://localhost:3000/api/tasks/${id}/stage`, {
+      await fetch(`/api/tasks/${id}/stage`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ stage: newStatus })
@@ -79,7 +79,7 @@ const NeedsHandling = () => {
     };
     
     try {
-        const res = await fetch('http://localhost:3000/api/tasks', {
+        const res = await fetch('/api/tasks', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(taskData)

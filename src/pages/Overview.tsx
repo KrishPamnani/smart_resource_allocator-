@@ -86,7 +86,7 @@ const Overview = () => {
   useEffect(() => {
     const fetchNeeds = async () => {
       try {
-        const res = await fetch('http://localhost:3000/api/crises');
+        const res = await fetch('/api/crises');
         if (res.ok) {
           const data = await res.json();
           const validData = data.filter((n: any) => n.coordinates && Array.isArray(n.coordinates) && n.coordinates.length === 2);
@@ -111,7 +111,7 @@ const Overview = () => {
   const handleResolveNeed = async (id: number | string) => {
     setCurrentNeeds(prev => prev.filter(n => n.id !== id));
     try {
-        const res = await fetch(`http://localhost:3000/api/crises/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/crises/${id}`, { method: 'DELETE' });
         if (res.ok) {
             toast.success("Location cleared successfully.");
         } else {
@@ -132,7 +132,7 @@ const Overview = () => {
 
     try {
         // Try to call the actual backend we just built!
-        const response = await fetch('http://localhost:3000/api/admin/trigger-auto-dispatch', {
+        const response = await fetch('/api/admin/trigger-auto-dispatch', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
